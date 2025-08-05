@@ -22,7 +22,7 @@
   ⭐ <strong>喜欢这个项目？点个Star支持一下！</strong> ⭐
 </p>
 
-[📖 快速开始](#-快速开始) • [🏗️ 架构说明](#-架构说明) • [📚 开发指南](CLAUDE.md) • [🌐 官网文档](http://fastapi.infyai.cn/) • [🤝 贡献指南](CONTRIBUTING.md) • [🌟 给个Star!](https://github.com/pkulab409/llm-arena)
+[📖 快速开始](#-快速开始) • [🎨 前端集成](#-前端集成) • [🏗️ 架构说明](#-架构说明) • [📚 开发指南](CLAUDE.md) • [🌐 官网文档](http://fastapi.infyai.cn/) • [🤝 贡献指南](CONTRIBUTING.md) • [🌟 给个Star!](https://github.com/pkulab409/llm-arena)
 
 </div>
 
@@ -41,6 +41,61 @@
 <img src="docs/images/tech-stack.svg" alt="技术栈" width="700">
 
 </div>
+
+---
+
+## 🎨 前端集成
+
+本项目已成功集成前端HTML界面，提供完整的全栈解决方案。
+
+### 🚀 快速部署
+
+```bash
+# 1. 克隆项目
+git clone https://github.com/pkulab409/llm-arena.git
+cd llm-arena
+
+# 2. 安装依赖
+pip install -e .
+
+# 3. 启动应用
+python run.py
+```
+
+### 📱 访问地址
+
+启动后可通过以下地址访问：
+
+- **🌐 前端界面**: http://localhost:8000/
+- **📚 API文档**: http://localhost:8000/docs
+- **🔌 API端点**: http://localhost:8000/api/
+
+### 🎯 前端功能
+
+- ✅ **用户认证**: 登录/登出，JWT Token管理
+- ✅ **用户管理**: 用户CRUD操作
+- ✅ **角色管理**: 角色权限管理
+- ✅ **API管理**: API列表查看
+- ✅ **文件上传**: 拖拽上传，文件预览
+- ✅ **响应式设计**: 适配桌面和移动设备
+
+### 🔧 部署脚本
+
+```bash
+# Linux/macOS
+./deploy.sh
+
+# Windows
+deploy.bat
+```
+
+### 🧪 集成测试
+
+```bash
+python test_integration.py
+```
+
+详细的前端集成说明请查看 [FRONTEND_INTEGRATION.md](FRONTEND_INTEGRATION.md)
 
 ---
 
@@ -88,11 +143,17 @@ evoai-backend-template/
 │   │   └── init_app.py          # 🚀 应用初始化
 │   ├── utils/                    # 🔧 工具函数
 │   └── settings/                 # ⚙️ 配置管理
+├── static/                       # 🎨 前端静态文件
+│   └── index.html               # 🌐 前端HTML界面
 ├── migrations/                   # 📈 数据库迁移文件
 ├── tests/                        # 🧪 测试文件
 ├── uploads/                      # 📂 文件上传目录
 ├── logs/                         # 📋 日志文件
 ├── pyproject.toml               # 📦 UV项目配置
 ├── .env                         # 🔐 环境变量配置
+├── run.py                       # 🚀 应用启动脚本
+├── deploy.sh                    # 🐧 Linux部署脚本
+├── deploy.bat                   # 🪟 Windows部署脚本
+├── test_integration.py          # 🧪 集成测试脚本
 └── CLAUDE.md                    # 🤖 Claude开发指南
 ```

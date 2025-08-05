@@ -56,6 +56,9 @@ def make_middlewares():
                 "/api/v1/base/access_token",
                 "/docs",
                 "/openapi.json",
+                "/",
+                "/redoc",
+                "/static",
             ],
         ),
     ]

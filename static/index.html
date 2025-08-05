@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>企业后台管理系统 - FastAPI 前端</title>
+    <style>
+        :root {
+            --primary: #3498db;
+            --secondary: #2c3e50;
+            --danger: #e74c3c;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --text: #333;
+            --light-bg: #f5f7fa;
+            --border: #dcdfe6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+
+        body {
+            background-color: var(--light-bg);
+            color: var(--text);
+        }
+
+        #app {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* 侧边栏样式 */
+        .sidebar {
+            width: 250px;
+            background-color: var(--secondary);
+            color: white;
+            padding: 20px 0;
+            transition: all 0.3s ease;
+        }
+
+        .logo {
+            text-align: center;
+            padding: 15px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .nav-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: background 0.3s;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        .nav-item.active {
+            background-color: var(--primary);
+        }
+
+        .nav-icon {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        /* 顶部导航 */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        /* 登录页面 */
+        .auth-container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(52,152,219,0.2);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-block {
+            width: 100%;
+        }
+
+        /* 数据表格 */
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th,
+        .table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+
+        .table tbody tr:hover {
+            background-color: rgba(52,152,219,0.05);
+        }
+
+        .action-cell {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.875rem;
+        }
+
+        .btn-warning {
+            background-color: var(--warning);
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        /* 表单页 */
+        .form-section {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -10px;
+        }
+
+        .form-col {
+            flex: 1 0 50%;
+            padding: 0 10px;
+            margin-bottom: 15px;
+        }
+
+        /* 文件上传 */
+        .upload-container {
+            border: 2px dashed var(--border);
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-preview {
+            max-width: 100%;
+            margin-top: 15px;
+        }
+
+        /* 模态框 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .notification {
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 2000;
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background-color: var(--success);
+            color: white;
+        }
+
+        .notification.error {
+            background-color: var(--danger);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- 登录状态判断 -->
+        <div class="auth-container" id="login-container">
+            <h2 style="text-align: center; margin-bottom: 25px;">后台管理系统</h2>
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input type="text" id="username" class="form-control" placeholder="请输入用户名">
+            </div>
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" class="form-control" placeholder="请输入密码">
+            </div>
+            <div class="form-group">
+                <button id="login-btn" class="btn btn-primary btn-block">登录</button>
+            </div>
+        </div>
+
+        <!-- 主界面 (登录后显示) -->
+        <div class="sidebar" id="sidebar" style="display: none;">
+            <div class="logo">后台管理</div>
+            <div class="nav-menu">
+                <div class="nav-item active" data-page="dashboard">
+                    <span class="nav-icon">📊</span> 仪表盘
+                </div>
+                <div class="nav-item" data-page="users">
+                    <span class="nav-icon">👥</span> 用户管理
+                </div>
+                <div class="nav-item" data-page="roles">
+                    <span class="nav-icon">🔑</span> 角色管理
+                </div>
+                <div class="nav-item" data-page="api">
+                    <span class="nav-icon">🔌</span> API管理
+                </div>
+                <div class="nav-item" data-page="upload">
+                    <span class="nav-icon">📁</span> 文件上传
+                </div>
+                <div class="nav-item" id="logout-btn">
+                    <span class="nav-icon">🚪</span> 退出登录
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content" id="main-content" style="display: none;">
+            <div class="header">
+                <div class="page-title" id="page-title">仪表盘</div>
+                <div class="user-info">
+                    <div class="avatar" id="user-avatar">A</div>
+                    <div>
+                        <div id="username-display">管理员</div>
+                        <small id="user-role">超级管理员</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 页面内容区域 -->
+            <div id="content-container">
+                <!-- 内容由JS动态渲染 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框模板 -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title" id="modal-title">编辑用户</h3>
+                    <span class="close-modal" style="cursor:pointer">×</span>
+                </div>
+                <div class="card-body" id="modal-body">
+                    <!-- 表单内容由JS动态生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通知提示 -->
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // 状态管理
+        const state = {
+            token: localStorage.getItem('access_token'),
+            refreshToken: localStorage.getItem('refresh_token'),
+            currentUser: null,
+            currentPage: 'dashboard',
+            sidebarOpen: true,
+            userList: [],
+            roleList: [],
+            apiList: []
+        };
+
+        // DOM 元素
+        const elements = {
+            loginContainer: document.getElementById('login-container'),
+            sidebar: document.getElementById('sidebar'),
+            mainContent: document.getElementById('main-content'),
+            contentContainer: document.getElementById('content-container'),
+            usernameInput: document.getElementById('username'),
+            passwordInput: document.getElementById('password'),
+            loginBtn: document.getElementById('login-btn'),
+            logoutBtn: document.getElementById('logout-btn'),
+            pageTitle: document.getElementById('page-title'),
+            userAvatar: document.getElementById('user-avatar'),
+            usernameDisplay: document.getElementById('username-display'),
+            userRole: document.getElementById('user-role'),
+            modal: document.getElementById('modal'),
+            modalTitle: document.getElementById('modal-title'),
+            modalBody: document.getElementById('modal-body'),
+            notification: document.getElementById('notification'),
+            navItems: document.querySelectorAll('.nav-item')
+        };
+
+        // API 端点配置
+        const API_URLS = {
+            accessToken: '/api/v1/base/access_token',
+            refreshToken: '/api/v1/base/refresh_token',
+            userInfo: '/api/v1/base/userinfo',
+            users: '/api/v1/users/list',
+            roles: '/api/v1/role/list',
+            apis: '/api/v1/api/list',
+            createUser: '/api/v1/users/create',
+            updateUser: '/api/v1/users/update',
+            deleteUser: '/api/v1/users/delete',
+            uploadFile: '/api/v1/files/upload'
+        };
+
+        // 主入口
+        document.addEventListener('DOMContentLoaded', initApp);
+
+        function initApp() {
+            // 绑定事件
+            bindEvents();
+
+            // 检查授权
+            checkAuth();
+        }
+
+        function bindEvents() {
+            // 登录按钮
+            elements.loginBtn.addEventListener('click', handleLogin);
+            
+            // 登出按钮
+            elements.logoutBtn.addEventListener('click', logout);
+            
+            // 菜单项点击
+            elements.navItems.forEach(item => {
+                if (item.id !== 'logout-btn') {
+                    item.addEventListener('click', () => {
+                        navigateTo(item.dataset.page);
+                    });
+                }
+            });
+            
+            // 模态框关闭
+            document.querySelector('.close-modal').addEventListener('click', closeModal);
+        }
+
+        // 认证检查
+        async function checkAuth() {
+            if (state.token) {
+                try {
+                    // 验证token有效性
+                    state.currentUser = await getUserInfo();
+                    showMainInterface();
+                    navigateTo('dashboard');
+                } catch (error) {
+                    console.error('Token无效:', error);
+                    showNotification('登录已过期，请重新登录', 'error');
+                    state.token = null;
+                    elements.loginContainer.style.display = 'block';
+                }
+            } else {
+                elements.loginContainer.style.display = 'block';
+            }
+        }
+
+        // 登录处理
+        async function handleLogin() {
+            const username = elements.usernameInput.value.trim();
+            const password = elements.passwordInput.value;
+            
+            if (!username || !password) {
+                showNotification('请输入用户名和密码', 'error');
+                return;
+            }
+            
+            try {
+                const tokens = await login(username, password);
+                state.token = tokens.access_token;
+                state.refreshToken = tokens.refresh_token;
+                
+                // 保存token
+                localStorage.setItem('access_token', tokens.access_token);
+                localStorage.setItem('refresh_token', tokens.refresh_token);
+                
+                // 获取用户信息
+                state.currentUser = await getUserInfo();
+                
+                // 切换到主界面
+                showMainInterface();
+                navigateTo('dashboard');
+                showNotification('登录成功', 'success');
+            } catch (error) {
+                showNotification(error.message || '登录失败', 'error');
+            }
+        }
+
+        // 登出
+        function logout() {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            state.token = null;
+            state.refreshToken = null;
+            state.currentUser = null;
+            
+            hideMainInterface();
+            elements.loginContainer.style.display = 'block';
+            showNotification('您已退出登录', 'success');
+        }
+
+        // 显示主界面
+        function showMainInterface() {
+            elements.loginContainer.style.display = 'none';
+            elements.sidebar.style.display = 'block';
+            elements.mainContent.style.display = 'block';
+            
+            // 更新用户信息
+            if (state.currentUser) {
+                elements.userAvatar.textContent = state.currentUser.username.charAt(0).toUpperCase();
+                elements.usernameDisplay.textContent = state.currentUser.username;
+                elements.userRole.textContent = state.currentUser.role?.name || '未知角色';
+            }
+        }
+
+        // 隐藏主界面
+        function hideMainInterface() {
+            elements.sidebar.style.display = 'none';
+            elements.mainContent.style.display = 'none';
+        }
+
+        // 页面导航
+        function navigateTo(page) {
+            state.currentPage = page;
+            
+            // 更新菜单激活状态
+            elements.navItems.forEach(item => {
+                if (item.dataset.page === page) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+            
+            // 更新标题
+            elements.pageTitle.textContent = getPageTitle(page);
+            
+            // 加载页面内容
+            switch(page) {
+                case 'dashboard':
+                    renderDashboard();
+                    break;
+                case 'users':
+                    loadUsers();
+                    break;
+                case 'roles':
+                    loadRoles();
+                    break;
+                case 'api':
+                    loadApis();
+                    break;
+                case 'upload':
+                    renderUploadPage();
+                    break;
+                default:
+                    renderDashboard();
+            }
+        }
+
+        // API封装层
+        const api = {
+            async get(url, params = {}) {
+                return apiRequest('GET', url, null, params);
+            },
+            
+            async post(url, data = {}) {
+                return apiRequest('POST', url, data);
+            },
+            
+            async put(url, data = {}) {
+                return apiRequest('PUT', url, data);
+            },
+            
+            async delete(url) {
+                return apiRequest('DELETE', url);
+            }
+        };
+
+        // 基础API请求
+        async function apiRequest(method, endpoint, data = null, params = {}) {
+            // 请求配置
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+            
+            // 添加token
+            if (state.token) {
+                headers['Authorization'] = `Bearer ${state.token}`;
+            }
+            
+            // 处理查询参数
+            let url = endpoint;
+            if (Object.keys(params).length > 0) {
+                const queryParams = new URLSearchParams(params);
+                url += `?${queryParams.toString()}`;
+            }
+            
+            // 配置选项
+            const options = {
+                method,
+                headers
+            };
+            
+            if (data) {
+                options.body = JSON.stringify(data);
+            }
+            
+            try {
+                const response = await fetch(url, options);
+                
+                // 处理401未授权
+                if (response.status === 401) {
+                    // 尝试刷新token
+                    await refreshToken();
+                    // 重试请求
+                    return apiRequest(method, endpoint, data, params);
+                }
+                
+                // 处理其他错误状态
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || '请求失败');
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('API请求错误:', error);
+                throw error;
+            }
+        }
+
+        // 获取token
+        async function login(username, password) {
+            return api.post(API_URLS.accessToken, { username, password });
+        }
+
+        // 刷新token
+        async function refreshToken() {
+            if (!state.refreshToken) throw new Error('无有效刷新令牌');
+            
+            try {
+                const tokens = await api.post(API_URLS.refreshToken, {
+                    refresh_token: state.refreshToken
+                });
+                
+                state.token = tokens.access_token;
+                state.refreshToken = tokens.refresh_token || state.refreshToken;
+                
+                // 保存新token
+                localStorage.setItem('access_token', tokens.access_token);
+                return tokens.access_token;
+            } catch (error) {
+                // 刷新失败则注销
+                logout();
+                throw new Error('登录已过期，请重新登录');
+            }
+        }
+
+        // 获取用户信息
+        async function getUserInfo() {
+            return api.get(API_URLS.userInfo);
+        }
+
+        // 获取用户列表
+        async function loadUsers() {
+            try {
+                state.userList = await api.get(API_URLS.users);
+                renderUserList();
+            } catch (error) {
+                showNotification(error.message || '加载用户失败', 'error');
+            }
+        }
+
+        // 获取角色列表
+        async function loadRoles() {
+            try {
+                state.roleList = await api.get(API_URLS.roles);
+                renderRoleList();
+            } catch (error) {
+                showNotification(error.message || '加载角色失败', 'error');
+            }
+        }
+
+        // 获取API列表
+        async function loadApis() {
+            try {
+                state.apiList = await api.get(API_URLS.apis);
+                renderApiList();
+            } catch (error) {
+                showNotification(error.message || '加载API失败', 'error');
+            }
+        }
+
+        // 创建用户
+        async function createUser(userData) {
+            try {
+                await api.post(API_URLS.createUser, userData);
+                loadUsers();
+                closeModal();
+                showNotification('用户创建成功', 'success');
+            } catch (error) {
+                showNotification(error.message || '创建用户失败', 'error');
+            }
+        }
+
+        // 删除用户
+        async function deleteUser(userId) {
+            if (!confirm('确定要删除该用户吗？此操作不可撤销')) return;
+            
+            try {
+                await api.delete(`${API_URLS.deleteUser}?id=${userId}`);
+                loadUsers();
+                showNotification('用户已删除', 'success');
+            } catch (error) {
+                showNotification(error.message || '删除用户失败', 'error');
+            }
+        }
+
+        // 文件上传
+        async function uploadFile(file) {
+            if (!file) {
+                showNotification('请选择要上传的文件', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                // 手动处理上传请求
+                const headers = {
+                    'Authorization': `Bearer ${state.token}`
+                };
+                
+                const response = await fetch(API_URLS.uploadFile, {
+                    method: 'POST',
+                    headers,
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || '上传失败');
+                }
+                
+                const result = await response.json();
+                showNotification(`文件上传成功: ${result.filename}`, 'success');
+                return result;
+            } catch (error) {
+                showNotification(error.message || '文件上传失败', 'error');
+            }
+        }
+
+        // 页面渲染方法
+        function getPageTitle(page) {
+            const titles = {
+                dashboard: '仪表盘',
+                users: '用户管理',
+                roles: '角色管理',
+                api: 'API管理',
+                upload: '文件上传'
+            };
+            return titles[page] || '仪表盘';
+        }
+
+        function renderDashboard() {
+            const content = `
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">系统概览</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="stats">
+                            <div class="stat-card">
+                                <h4>用户总数</h4>
+                                <div id="user-count">--</div>
+                            </div>
+                            <div class="stat-card">
+                                <h4>角色总数</h4>
+                                <div id="role-count">--</div>
+                            </div>
+                            <div class="stat-card">
+                                <h4>API总数</h4>
+                                <div id="api-count">--</div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 20px;">
+                            <h4>系统信息</h4>
+                            <div>版本: 1.0.0</div>
+                            <div>环境: 生产环境</div>
+                            <div>API文档: <a href="/docs" target="_blank">查看文档</a></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            elements.contentContainer.innerHTML = content;
+            
+            // 加载统计信息
+            Promise.all([
+                api.get(API_URLS.users),
+                api.get(API_URLS.roles),
+                api.get(API_URLS.apis)
+            ]).then(([users, roles, apis]) => {
+                document.getElementById('user-count').textContent = users.length;
+                document.getElementById('role-count').textContent = roles.length;
+                document.getElementById('api-count').textContent = apis.length;
+            }).catch(console.error);
+        }
+
+        function renderUserList() {
+            const content = `
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">用户列表</h3>
+                        <button class="btn btn-primary" id="create-user-btn">添加用户</button>
+                    </div>
+                    <div class="card-body">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>用户名</th>
+                                    <th>角色</th>
+                                    <th>状态</th>
+                                    <th>创建时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="user-list-body">
+                                ${state.userList.map(user => `
+                                    <tr>
+                                        <td>${user.username}</td>
+                                        <td>${user.role?.name || '--'}</td>
+                                        <td>${user.is_active ? '激活' : '禁用'}</td>
+                                        <td>${new Date(user.created_at).toLocaleString()}</td>
+                                        <td class="action-cell">
+                                            <button class="btn btn-sm btn-warning edit-user" data-id="${user.id}">编辑</button>
+                                            <button class="btn btn-sm btn-danger delete-user" data-id="${user.id}">删除</button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            
+            elements.contentContainer.innerHTML = content;
+            
+            // 添加事件
+            document.getElementById('create-user-btn').addEventListener('click', () => {
+                renderUserForm();
+            });
+            
+            document.querySelectorAll('.edit-user').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const userId = btn.dataset.id;
+                    const user = state.userList.find(u => u.id === userId);
+                    renderUserForm(user);
+                });
+            });
+            
+            document.querySelectorAll('.delete-user').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const userId = btn.dataset.id;
+                    deleteUser(userId);
+                });
+            });
+        }
+
+        function renderRoleList() {
+            const content = `
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">角色列表</h3>
+                    </div>
+                    <div class="card-body">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>角色名称</th>
+                                    <th>描述</th>
+                                    <th>创建时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${state.roleList.map(role => `
+                                    <tr>
+                                        <td>${role.name}</td>
+                                        <td>${role.description || '--'}</td>
+                                        <td>${new Date(role.created_at).toLocaleString()}</td>
+                                        <td class="action-cell">
+                                            <button class="btn btn-sm btn-warning edit-role">编辑</button>
+                                            <button class="btn btn-sm btn-danger delete-role">删除</button>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            
+            elements.contentContainer.innerHTML = content;
+        }
+
+        function renderApiList() {
+            const content = `
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">API列表</h3>
+                    </div>
+                    <div class="card-body">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>API路径</th>
+                                    <th>描述</th>
+                                    <th>方法</th>
+                                    <th>是否启用</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${state.apiList.map(api => `
+                                    <tr>
+                                        <td>${api.path}</td>
+                                        <td>${api.description || '--'}</td>
+                                        <td>${api.method}</td>
+                                        <td>${api.is_active ? '是' : '否'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            
+            elements.contentContainer.innerHTML = content;
+        }
+
+        function renderUploadPage() {
+            const content = `
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">文件上传</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="upload-container">
+                            <p>拖放文件到此处或点击选择文件</p>
+                            <input type="file" id="file-input" class="file-input">
+                            <button class="btn btn-primary" id="select-file-btn">选择文件</button>
+                            <button class="btn btn-success" id="upload-btn" style="display:none; margin-top:10px;">上传文件</button>
+                            
+                            <div id="file-info" style="margin-top: 15px; display: none;">
+                                <p>文件名: <span id="filename"></span></p>
+                                <p>文件大小: <span id="filesize"></span></p>
+                            </div>
+                            
+                            <img id="image-preview" class="upload-preview" style="max-width: 300px; display: none;">
+                            
+                            <div id="upload-result" style="margin-top: 15px;"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            elements.contentContainer.innerHTML = content;
+            
+            // 文件选择逻辑
+            let selectedFile = null;
+            
+            document.getElementById('select-file-btn').addEventListener('click', () => {
+                document.getElementById('file-input').click();
+            });
+            
+            document.getElementById('file-input').addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                selectedFile = file;
+                
+                // 显示文件信息
+                document.getElementById('file-info').style.display = 'block';
+                document.getElementById('filename').textContent = file.name;
+                document.getElementById('filesize').textContent = formatFileSize(file.size);
+                
+                // 图片预览
+                const preview = document.getElementById('image-preview');
+                if (file.type.startsWith('image/')) {
+                    preview.style.display = 'block';
+                    preview.src = URL.createObjectURL(file);
+                } else {
+                    preview.style.display = 'none';
+                }
+                
+                // 显示上传按钮
+                document.getElementById('upload-btn').style.display = 'block';
+            });
+            
+            // 上传按钮
+            document.getElementById('upload-btn').addEventListener('click', async () => {
+                document.getElementById('upload-btn').textContent = '上传中...';
+                document.getElementById('upload-btn').disabled = true;
+                
+                try {
+                    const result = await uploadFile(selectedFile);
+                    document.getElementById('upload-result').innerHTML = `
+                        <div class="success">上传成功!</div>
+                        <div>文件路径: ${result.filepath}</div>
+                    `;
+                } finally {
+                    document.getElementById('upload-btn').textContent = '上传文件';
+                    document.getElementById('upload-btn').disabled = false;
+                }
+            });
+            
+            // 拖放支持
+            const uploadContainer = document.querySelector('.upload-container');
+            uploadContainer.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadContainer.style.borderColor = 'var(--primary)';
+            });
+            
+            uploadContainer.addEventListener('dragleave', () => {
+                uploadContainer.style.borderColor = 'var(--border)';
+            });
+            
+            uploadContainer.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadContainer.style.borderColor = 'var(--border)';
+                
+                if (e.dataTransfer.files.length) {
+                    document.getElementById('file-input').files = e.dataTransfer.files;
+                    const event = new Event('change');
+                    document.getElementById('file-input').dispatchEvent(event);
+                }
+            });
+        }
+
+        function renderUserForm(user = {}) {
+            elements.modalTitle.textContent = user.id ? '编辑用户' : '创建用户';
+            
+            const form = `
+                <form id="user-form">
+                    <input type="hidden" name="id" value="${user.id || ''}">
+                    
+                    <div class="form-group">
+                        <label>用户名 *</label>
+                        <input type="text" name="username" class="form-control" value="${user.username || ''}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>密码 ${user.id ? '(留空则不修改)' : '*'}</label>
+                        <input type="password" name="password" class="form-control" ${user.id ? '' : 'required'}>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>邮箱</label>
+                        <input type="email" name="email" class="form-control" value="${user.email || ''}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>角色</label>
+                        <select name="role_id" class="form-control">
+                            <option value="">选择角色</option>
+                            ${state.roleList.map(role => `
+                                <option value="${role.id}" ${user.role_id === role.id ? 'selected' : ''}>
+                                    ${role.name}
+                                </option>
+                            `).join('')}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>状态</label>
+                        <div>
+                            <label>
+                                <input type="radio" name="is_active" value="true" ${user.is_active !== false ? 'checked' : ''}>
+                                启用
+                            </label>
+                            <label>
+                                <input type="radio" name="is_active" value="false" ${user.is_active === false ? 'checked' : ''}>
+                                禁用
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="text-align: right;">
+                        <button type="button" class="btn close-modal">取消</button>
+                        <button type="submit" class="btn btn-primary">保存</button>
+                    </div>
+                </form>
+            `;
+            
+            elements.modalBody.innerHTML = form;
+            openModal();
+            
+            // 表单提交
+            document.getElementById('user-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                const formData = new FormData(e.target);
+                const data = Object.fromEntries(formData.entries());
+                
+                // 转换数据类型
+                data.is_active = data.is_active === 'true';
+                if (!data.id) delete data.id;
+                
+                if (user.id) {
+                    api.put(API_URLS.updateUser, data)
+                        .then(() => {
+                            loadUsers();
+                            showNotification('用户更新成功', 'success');
+                        })
+                        .catch(error => {
+                            showNotification(error.message || '更新失败', 'error');
+                        });
+                } else {
+                    createUser(data);
+                }
+            });
+            
+            // 绑定取消按钮
+            document.querySelector('.modal .close-modal').addEventListener('click', closeModal);
+        }
+
+        // 模态框控制
+        function openModal() {
+            elements.modal.classList.add('active');
+        }
+
+        function closeModal() {
+            elements.modal.classList.remove('active');
+        }
+
+        // 通知系统
+        function showNotification(message, type = 'success') {
+            const noti = elements.notification;
+            noti.textContent = message;
+            noti.className = `notification ${type} show`;
+            
+            setTimeout(() => {
+                noti.classList.remove('show');
+            }, 3000);
+        }
+
+        // 工具函数
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' bytes';
+            else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+            else return (bytes / 1048576).toFixed(1) + ' MB';
+        }
+    </script>
+</body>
+</html>

@@ -1,8 +1,12 @@
 from contextlib import asynccontextmanager
+import os
+from pathlib import Path
 
 from fastapi import Depends, FastAPI
 from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse, JSONResponse
 from tortoise import Tortoise
 
 from core.dependency import get_current_username
@@ -51,6 +55,21 @@ def create_app() -> FastAPI:
         middleware=make_middlewares(),
         lifespan=lifespan,
     )
+
+    # 挂载静态文件
+    static_dir = Path(__file__).parent.parent / "static"
+    if static_dir.exists():
+        app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
+
+    @app.get("/", include_in_schema=False)
+    async def serve_frontend():
+        """服务前端HTML文件"""
+        index_path = static_dir / "index.html"
+        if index_path.exists():
+            # 注意：FileResponse 需要传递 str 路径，否则部分环境下会报错
+            return FileResponse(str(index_path), media_type="text/html")
+        else:
+            return JSONResponse({"message": "前端文件未找到，请确保 static/index.html 文件存在"}, status_code=404)
 
     @app.get("/docs", include_in_schema=False)
     async def custom_swagger_ui_html(
