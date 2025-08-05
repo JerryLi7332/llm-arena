@@ -14,6 +14,19 @@ from core.init_app import (
     register_routers,
 )
 
+import sys
+import locale
+
+
+# 强制使用 UTF-8 编码
+if sys.platform.startswith("win"):
+    sys.stdin.reconfigure(encoding='utf-8')
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
+    if locale.getpreferredencoding().lower() != "utf-8":
+        locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')  # 或其他支持 UTF-8 的地区
+
+
 try:
     from settings.config import settings
 except ImportError as e:

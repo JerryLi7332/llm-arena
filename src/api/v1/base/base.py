@@ -5,6 +5,9 @@ from fastapi import APIRouter, Request
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
+# 设置环境变量以避免 slowapi 读取 .env 文件时的编码问题
+os.environ.setdefault("SLOWAPI_DISABLE_ENV_FILE", "true")
+
 from core.ctx import CTX_USER_ID
 from core.dependency import DependAuth
 from models.admin import User
@@ -20,7 +23,13 @@ from settings import settings
 from utils.jwt import create_token_pair, verify_token
 
 # 创建限流器实例
-limiter = Limiter(key_func=get_remote_address)
+try:
+    limiter = Limiter(key_func=get_remote_address, default_limits=["200 per day", "50 per hour"])
+except UnicodeDecodeError:
+    # 如果遇到编码错误，创建一个简化的限流器
+    import warnings
+    warnings.warn("SlowAPI 初始化失败，使用简化配置")
+    limiter = None
 
 router = APIRouter()
 
@@ -31,8 +40,9 @@ def apply_rate_limit(rate="5/minute"):
     def decorator(func):
         import os
 
-        if os.getenv("TESTING", "false").lower() == "true":
-            return func  # 测试环境不应用限流
+        # 如果 limiter 为 None 或处于测试环境，不应用限流
+        if limiter is None or os.getenv("TESTING", "false").lower() == "true":
+            return func
         return limiter.limit(rate)(func)
 
     return decorator

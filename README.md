@@ -1,3 +1,5 @@
+![LLM Arena](docs/images/LLMArena.jpg)
+
 # LLM Arena
 
 这是一个**以大语言模型为算法基础的策略游戏对战平台**。

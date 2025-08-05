@@ -1,6 +1,7 @@
 import json
 import os
 import secrets
+from pathlib import Path
 
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -8,10 +9,12 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=".env" if Path(".env").exists() else None,
         env_file_encoding="utf-8",
         case_sensitive=True,
         extra="ignore",
+        env_ignore_empty=True,
+        env_nested_delimiter="__",
     )
     VERSION: str = "0.1.0"
     APP_TITLE: str = "Vue FastAPI Admin"
