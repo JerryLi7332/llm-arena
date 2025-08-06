@@ -37,6 +37,16 @@ from settings.config import settings
 from utils.cache import cache_manager
 
 
+EXCLUDE_PATHS = [
+    "/api/v1/base/access_token",
+    "/docs",
+    "/openapi.json",
+    "/",
+    "/redoc",
+    "/static",
+]
+
+
 def make_middlewares():
     middleware = [
         Middleware(
@@ -52,14 +62,7 @@ def make_middlewares():
         Middleware(
             HttpAuditLogMiddleware,
             methods=["GET", "POST", "PUT", "DELETE"],
-            exclude_paths=[
-                "/api/v1/base/access_token",
-                "/docs",
-                "/openapi.json",
-                "/",
-                "/redoc",
-                "/static",
-            ],
+            exclude_paths=EXCLUDE_PATHS,
         ),
     ]
     return middleware
@@ -70,7 +73,8 @@ def register_exceptions(app: FastAPI):
     app.add_exception_handler(HTTPException, HttpExcHandle)
     app.add_exception_handler(IntegrityError, IntegrityHandle)
     app.add_exception_handler(RequestValidationError, RequestValidationHandle)
-    app.add_exception_handler(ResponseValidationError, ResponseValidationHandle)
+    app.add_exception_handler(ResponseValidationError,
+                              ResponseValidationHandle)
     # 注册限流异常处理
     app.state.limiter = limiter
     app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)

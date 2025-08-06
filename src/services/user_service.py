@@ -89,8 +89,14 @@ class UserService(BaseService):
     async def update_user(self, user_in: UserUpdate) -> Success:
         """更新用户 - 包含角色更新和缓存清理"""
         try:
+            # 处理密码更新
+            update_data = user_in.model_dump(exclude_unset=True)
+            if update_data.get('password'):
+                from utils.password import get_password_hash
+                update_data['password'] = get_password_hash(password=update_data['password'])
+            
             # 更新用户基础信息
-            user = await user_repository.update(id=user_in.id, obj_in=user_in)
+            user = await user_repository.update(id=user_in.id, obj_in=UserUpdate(**update_data))
 
             # 更新用户角色
             await user_repository.update_roles(user, user_in.role_ids)

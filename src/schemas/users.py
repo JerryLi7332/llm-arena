@@ -70,10 +70,25 @@ class UserUpdate(BaseModel):
     id: int
     email: EmailStr
     username: str
+    password: str | None = None
     is_active: bool | None = True
     is_superuser: bool | None = False
     role_ids: list[int] | None = []
     dept_id: int | None = 0
+
+    @field_validator("password")
+    @classmethod
+    def validate_password_strength(cls, v):
+        """验证密码强度（如果提供）"""
+        if v is None:
+            return v
+        if len(v) < 8:
+            raise ValueError("密码长度至少8位")
+        if not re.search(r"[A-Za-z]", v):
+            raise ValueError("密码必须包含字母")
+        if not re.search(r"\d", v):
+            raise ValueError("密码必须包含数字")
+        return v
 
 
 class UpdatePassword(BaseModel):
