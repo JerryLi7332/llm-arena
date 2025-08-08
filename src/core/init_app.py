@@ -38,12 +38,17 @@ from utils.cache import cache_manager
 
 
 EXCLUDE_PATHS = [
-    "/api/v1/base/access_token",
+    "/api/v1/base/auth/access_token",
+    "/api/v1/base/auth/register",
     "/docs",
     "/openapi.json",
     "/",
     "/redoc",
     "/static",
+    "/auth/login",
+    "/auth/register",
+    "/dashboard",
+    "/admin",
 ]
 
 

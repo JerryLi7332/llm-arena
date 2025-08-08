@@ -71,6 +71,42 @@ def create_app() -> FastAPI:
         else:
             return JSONResponse({"message": "前端文件未找到，请确保 static/index.html 文件存在"}, status_code=404)
 
+    @app.get("/auth/login", include_in_schema=False)
+    async def serve_login():
+        """服务登录页面"""
+        login_path = static_dir / "login.html"
+        if login_path.exists():
+            return FileResponse(str(login_path), media_type="text/html")
+        else:
+            return JSONResponse({"message": "登录页面未找到"}, status_code=404)
+
+    @app.get("/auth/register", include_in_schema=False)
+    async def serve_register():
+        """服务注册页面"""
+        register_path = static_dir / "register.html"
+        if register_path.exists():
+            return FileResponse(str(register_path), media_type="text/html")
+        else:
+            return JSONResponse({"message": "注册页面未找到"}, status_code=404)
+
+    @app.get("/dashboard", include_in_schema=False)
+    async def serve_dashboard():
+        """服务用户仪表板页面"""
+        dashboard_path = static_dir / "dashboard.html"
+        if dashboard_path.exists():
+            return FileResponse(str(dashboard_path), media_type="text/html")
+        else:
+            return JSONResponse({"message": "仪表板页面未找到"}, status_code=404)
+
+    @app.get("/admin", include_in_schema=False)
+    async def serve_admin():
+        """服务管理后台页面"""
+        admin_path = static_dir / "admin.html"
+        if admin_path.exists():
+            return FileResponse(str(admin_path), media_type="text/html")
+        else:
+            return JSONResponse({"message": "管理后台页面未找到"}, status_code=404)
+
     @app.get("/docs", include_in_schema=False)
     async def custom_swagger_ui_html(
         username: str = Depends(get_current_username),

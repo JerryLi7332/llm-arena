@@ -19,6 +19,7 @@ from schemas.login import (
     RefreshTokenRequest,
     TokenRefreshOut,
 )
+from schemas.users import UserCreate
 from settings import settings
 from utils.jwt import create_token_pair, verify_token
 
@@ -48,7 +49,7 @@ def apply_rate_limit(rate="5/minute"):
     return decorator
 
 
-@router.post("/access_token", summary="获取token")
+@router.post("/auth/access_token", summary="获取token")
 @apply_rate_limit()
 async def login_access_token(request: Request, credentials: CredentialsSchema):
     user: User = await user_repository.authenticate(credentials)
@@ -98,6 +99,53 @@ async def refresh_access_token(request: Request, refresh_request: RefreshTokenRe
 
     except Exception:
         return Fail(code=401, msg="令牌无效或已过期")
+
+
+@router.post("/auth/register", summary="用户注册")
+@apply_rate_limit("3/minute")
+async def register_user(request: Request, user_in: UserCreate):
+    """
+    普通用户注册
+    """
+    try:
+        # 检查用户名是否已存在
+        existing_user = await user_repository.get_by_username(user_in.username)
+        if existing_user:
+            return Fail(code=400, msg="用户名已存在")
+
+        # 检查邮箱是否已存在
+        existing_email = await user_repository.get_by_email(user_in.email)
+        if existing_email:
+            return Fail(code=400, msg="邮箱已被注册")
+
+        # 创建普通用户（非超级管理员）
+        user_in.is_superuser = False
+        user_in.is_active = True
+        
+        # 创建用户
+        new_user = await user_repository.create_user(user_in)
+        
+        # 更新最后登录时间
+        await user_repository.update_last_login(new_user.id)
+
+        # 创建访问令牌和刷新令牌
+        access_token, refresh_token = create_token_pair(
+            user_id=new_user.id, 
+            username=new_user.username, 
+            is_superuser=new_user.is_superuser
+        )
+
+        data = JWTOut(
+            access_token=access_token,
+            refresh_token=refresh_token,
+            username=new_user.username,
+            expires_in=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        )
+        
+        return Success(data=data.model_dump(), msg="注册成功")
+
+    except Exception as e:
+        return Fail(code=500, msg=f"注册失败: {str(e)}")
 
 
 @router.get("/userinfo", summary="查看用户信息")
