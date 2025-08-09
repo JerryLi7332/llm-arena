@@ -211,3 +211,40 @@ logs/*.log
 
 # Documentation files (internal use only)
 IMPROVEMENT_ROADMAP.md
+
+# Vue 相关
+/node_modules/
+/dist/
+/build/
+/.env
+/coverage/
+/*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+/package-lock.json
+/yarn.lock
+/pnpm-lock.yaml
+
+# Vite 相关
+/.vitepress/dist
+/.vite
+/.cache
+
+# 生产环境下不需要的前端静态资源
+frontend/dist/
+frontend/node_modules/
+frontend/.env
+frontend/.env.*
+frontend/coverage/
+frontend/.vitepress/dist
+frontend/.vite
+frontend/.cache
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+frontend/package-lock.json
+frontend/yarn.lock
+frontend/pnpm-lock.yaml

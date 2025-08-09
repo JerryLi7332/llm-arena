@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     APP_DESCRIPTION: str = "Description"
 
     CORS_ORIGINS: str = os.getenv(
-        "CORS_ORIGINS", "http://localhost:3000,http://localhost:8080"
+        "CORS_ORIGINS", "http://localhost:3000,http://localhost:8080,http://127.0.0.1:3000,http://127.0.0.1:8080"
     )
 
     @property
@@ -37,11 +37,19 @@ class Settings(BaseSettings):
         "PUT",
         "DELETE",
         "OPTIONS",
+        "PATCH",
+        "HEAD",
     ]
     CORS_ALLOW_HEADERS: list = [
         "Content-Type",
         "Authorization",
         "X-Requested-With",
+        "Accept",
+        "Origin",
+        "Access-Control-Request-Method",
+        "Access-Control-Request-Headers",
+        "Cache-Control",
+        "Pragma",
     ]
 
     DEBUG: bool = True

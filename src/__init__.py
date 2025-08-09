@@ -5,7 +5,6 @@ from pathlib import Path
 from fastapi import Depends, FastAPI
 from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
 from tortoise import Tortoise
 
@@ -56,56 +55,58 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
-    # 挂载静态文件
-    static_dir = Path(__file__).parent.parent / "static"
-    if static_dir.exists():
-        app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
-
+    # Vue前端构建目录
+    vue_dist_dir = Path(__file__).parent.parent / "frontend" / "dist"
+    
+    # 检查Vue构建文件是否存在
+    index_path = vue_dist_dir / "index.html"
+    
+    # Vue前端路由支持 - 所有前端路由都返回index.html
     @app.get("/", include_in_schema=False)
     async def serve_frontend():
         """服务前端HTML文件"""
-        index_path = static_dir / "index.html"
         if index_path.exists():
-            # 注意：FileResponse 需要传递 str 路径，否则部分环境下会报错
             return FileResponse(str(index_path), media_type="text/html")
         else:
-            return JSONResponse({"message": "前端文件未找到，请确保 static/index.html 文件存在"}, status_code=404)
+            return JSONResponse({
+                "message": "前端文件未找到，请先构建Vue项目",
+                "build_command": "cd frontend && npm run build"
+            }, status_code=404)
 
-    @app.get("/auth/login", include_in_schema=False)
-    async def serve_login():
-        """服务登录页面"""
-        login_path = static_dir / "login.html"
-        if login_path.exists():
-            return FileResponse(str(login_path), media_type="text/html")
+    # 静态资源支持（CSS、JS、图片等）
+    @app.get("/assets/{path:path}", include_in_schema=False)
+    async def serve_assets(path: str):
+        """服务Vue构建的静态资源"""
+        asset_path = vue_dist_dir / "assets" / path
+        if asset_path.exists() and asset_path.is_file():
+            return FileResponse(str(asset_path))
         else:
-            return JSONResponse({"message": "登录页面未找到"}, status_code=404)
+            return JSONResponse({"message": "静态资源未找到"}, status_code=404)
 
-    @app.get("/auth/register", include_in_schema=False)
-    async def serve_register():
-        """服务注册页面"""
-        register_path = static_dir / "register.html"
-        if register_path.exists():
-            return FileResponse(str(register_path), media_type="text/html")
+    # Vue路由支持 - 所有前端路由都返回index.html
+    @app.get("/{path:path}", include_in_schema=False)
+    async def serve_vue_routes(path: str):
+        """支持Vue前端路由"""
+        # 排除API路由
+        if path.startswith("api/"):
+            return JSONResponse({"message": "API路由不存在"}, status_code=404)
+        
+        # 排除文档路由
+        if path in ["docs", "openapi.json", "redoc"]:
+            return JSONResponse({"message": "文档路由不存在"}, status_code=404)
+        
+        # 排除静态资源路由
+        if path.startswith("assets/"):
+            return JSONResponse({"message": "静态资源路由不存在"}, status_code=404)
+        
+        # 所有其他路由都返回index.html，让Vue Router处理
+        if index_path.exists():
+            return FileResponse(str(index_path), media_type="text/html")
         else:
-            return JSONResponse({"message": "注册页面未找到"}, status_code=404)
-
-    @app.get("/dashboard", include_in_schema=False)
-    async def serve_dashboard():
-        """服务用户仪表板页面"""
-        dashboard_path = static_dir / "dashboard.html"
-        if dashboard_path.exists():
-            return FileResponse(str(dashboard_path), media_type="text/html")
-        else:
-            return JSONResponse({"message": "仪表板页面未找到"}, status_code=404)
-
-    @app.get("/admin", include_in_schema=False)
-    async def serve_admin():
-        """服务管理后台页面"""
-        admin_path = static_dir / "admin.html"
-        if admin_path.exists():
-            return FileResponse(str(admin_path), media_type="text/html")
-        else:
-            return JSONResponse({"message": "管理后台页面未找到"}, status_code=404)
+            return JSONResponse({
+                "message": "前端文件未找到，请先构建Vue项目",
+                "build_command": "cd frontend && npm run build"
+            }, status_code=404)
 
     @app.get("/docs", include_in_schema=False)
     async def custom_swagger_ui_html(
