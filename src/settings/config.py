@@ -1,6 +1,7 @@
 import json
 import os
 import secrets
+from pathlib import Path
 
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -8,10 +9,12 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=".env" if Path(".env").exists() else None,
         env_file_encoding="utf-8",
         case_sensitive=True,
         extra="ignore",
+        env_ignore_empty=True,
+        env_nested_delimiter="__",
     )
     VERSION: str = "0.1.0"
     APP_TITLE: str = "Vue FastAPI Admin"
@@ -19,7 +22,7 @@ class Settings(BaseSettings):
     APP_DESCRIPTION: str = "Description"
 
     CORS_ORIGINS: str = os.getenv(
-        "CORS_ORIGINS", "http://localhost:3000,http://localhost:8080"
+        "CORS_ORIGINS", "http://localhost:3000,http://localhost:8080,http://127.0.0.1:3000,http://127.0.0.1:8080"
     )
 
     @property
@@ -34,11 +37,19 @@ class Settings(BaseSettings):
         "PUT",
         "DELETE",
         "OPTIONS",
+        "PATCH",
+        "HEAD",
     ]
     CORS_ALLOW_HEADERS: list = [
         "Content-Type",
         "Authorization",
         "X-Requested-With",
+        "Accept",
+        "Origin",
+        "Access-Control-Request-Method",
+        "Access-Control-Request-Headers",
+        "Cache-Control",
+        "Pragma",
     ]
 
     DEBUG: bool = True

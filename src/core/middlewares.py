@@ -197,6 +197,8 @@ class HttpAuditLogMiddleware(BaseHTTPMiddleware):
             "path": request.url.path,
             "status": response.status_code,
             "method": request.method,
+            "module": "",
+            "summary": "",
         }
         # 路由信息
         app: FastAPI = request.app
@@ -206,8 +208,8 @@ class HttpAuditLogMiddleware(BaseHTTPMiddleware):
                 and route.path_regex.match(request.url.path)
                 and request.method in route.methods
             ):
-                data["module"] = ",".join(route.tags)
-                data["summary"] = route.summary
+                data["module"] = ",".join(route.tags) if route.tags else ""
+                data["summary"] = route.summary if route.summary else ""
         # 获取用户信息
         try:
             token = request.headers.get("token")
