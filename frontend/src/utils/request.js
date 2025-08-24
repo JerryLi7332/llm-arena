@@ -58,6 +58,10 @@ request.interceptors.request.use(
 // 响应拦截器
 request.interceptors.response.use(
   (response) => {
+    // 如果是blob响应，直接返回
+    if (response.config.responseType === 'blob') {
+      return response.data
+    }
     return response.data
   },
   async (error) => {

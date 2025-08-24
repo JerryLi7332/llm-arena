@@ -198,7 +198,6 @@ temp/
 .Trashes
 ehthumbs.db
 Thumbs.db
-
 # Development tools
 .pytest_cache/
 .coverage
@@ -248,3 +247,4 @@ frontend/pnpm-debug.log*
 frontend/package-lock.json
 frontend/yarn.lock
 frontend/pnpm-lock.yaml
+

@@ -1,12 +1,13 @@
 from fastapi import APIRouter
 
-from core.dependency import DependPermisson
+from core.dependency import DependPermisson, DependAuth
 
 from .apis import apis_router
 from .base import base_router
 from .files import files_router
 from .roles import roles_router
 from .users import users_router
+from .games import games_router
 
 v1_router = APIRouter()
 
@@ -23,6 +24,7 @@ v1_router.include_router(apis_router, prefix="/api", dependencies=[DependPermiss
 # v1_router.include_router(
 #     auditlog_router, prefix="/auditlog", dependencies=[DependPermisson]
 # )
-v1_router.include_router(files_router, prefix="/files", dependencies=[DependPermisson])
+v1_router.include_router(files_router, prefix="/files", dependencies=[DependPermisson], tags=["上传文件"])
+v1_router.include_router(games_router, prefix="/games", dependencies=[DependAuth])
 
 __all__ = ["v1_router"]
