@@ -152,7 +152,11 @@ async def register_user(request: Request, user_in: UserCreate):
 async def get_userinfo(current_user: User = DependAuth):
     user_id = CTX_USER_ID.get()
     user_obj = await user_repository.get(id=user_id)
-    user_dict = await user_obj.to_dict()
+    if not user_obj:
+        return Fail(code=404, msg="用户不存在")
+    
+    # 确保返回完整的用户信息，包括email字段
+    user_dict = await user_obj.to_dict(m2m=True, exclude_fields=["password"])
     return Success(data=user_dict)
 
 

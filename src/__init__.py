@@ -55,6 +55,9 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
+    register_exceptions(app)
+    register_routers(app, prefix="/api")
+    
     # Vue前端构建目录
     vue_dist_dir = Path(__file__).parent.parent / "frontend" / "dist"
     
@@ -84,6 +87,7 @@ def create_app() -> FastAPI:
             return JSONResponse({"message": "静态资源未找到"}, status_code=404)
 
     # Vue路由支持 - 所有前端路由都返回index.html
+    # 注意：这个通配符路由必须放在最后，避免拦截API路由
     @app.get("/{path:path}", include_in_schema=False)
     async def serve_vue_routes(path: str):
         """支持Vue前端路由"""
@@ -138,9 +142,6 @@ def create_app() -> FastAPI:
         )
 
         return openapi_schema
-
-    register_exceptions(app)
-    register_routers(app, prefix="/api")
     return app
 
 
