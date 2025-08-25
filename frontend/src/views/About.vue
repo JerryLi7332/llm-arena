@@ -1,8 +1,8 @@
 <template>
-  <div class="about">
-    <AppHeader />
-    <div class="container">
-      <h1 class="page-title">关于我们</h1>
+  <Layout>
+    <div class="about">
+      <div class="container">
+        <h1 class="page-title">关于我们</h1>
       <p class="page-subtitle">了解LLM Arena的使命和愿景</p>
       
       <div class="content-sections">
@@ -190,14 +190,15 @@
         </section>
       </div>
     </div>
-  </div>
+    </div>
+  </Layout>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Monitor, Platform, DataAnalysis, Message, Link, ChatDotRound, Document } from '@element-plus/icons-vue'
-import AppHeader from '@/components/AppHeader.vue'
+import Layout from '@/components/Layout.vue'
 
 const contactForm = ref({
   name: '',
@@ -224,8 +225,8 @@ const sendMessage = () => {
 
 <style lang="scss" scoped>
 .about {
-  padding: 120px 0 80px;
-  min-height: 100vh;
+  padding: 40px 0 80px;
+  min-height: calc(100vh - 80px);
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 

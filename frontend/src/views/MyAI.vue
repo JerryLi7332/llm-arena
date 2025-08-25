@@ -1,8 +1,8 @@
 <template>
-  <div class="my-ai">
-    <AppHeader />
-    <div class="container">
-      <h1 class="page-title">我的AI</h1>
+  <Layout>
+    <div class="my-ai">
+      <div class="container">
+        <h1 class="page-title">我的AI</h1>
       <p class="page-subtitle">管理您创建的AI助手和对话历史</p>
       
       <div class="content-tabs">
@@ -172,13 +172,14 @@
       </template>
     </el-dialog>
   </div>
+  </Layout>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Upload, Document } from '@element-plus/icons-vue'
-import AppHeader from '@/components/AppHeader.vue'
+import Layout from '@/components/Layout.vue'
 import { useUserStore } from '@/stores/user'
 import { gameAIApi } from '@/api/gameAI'
 

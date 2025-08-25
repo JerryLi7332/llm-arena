@@ -1,8 +1,8 @@
 <template>
-  <div class="profile-page">
-    <AppHeader />
-    <div class="profile-container">
-      <div class="profile-header">
+  <Layout>
+    <div class="profile-page">
+      <div class="profile-container">
+        <div class="profile-header">
         <h1>个人资料</h1>
         <p>管理您的账户信息和设置</p>
       </div>
@@ -154,6 +154,7 @@
       </div>
     </div>
   </div>
+  </Layout>
 </template>
 
 <script setup>
@@ -161,7 +162,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { ElMessage } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
-import AppHeader from '@/components/AppHeader.vue'
+import Layout from '@/components/Layout.vue'
 
 const userStore = useUserStore()
 const profileFormRef = ref()

@@ -1,11 +1,9 @@
 <template>
-  <div class="home">
-    <!-- 导航栏 -->
-    <AppHeader />
-
-    <!-- 主要内容 -->
-    <main class="main-content">
-      <!-- 英雄区域 -->
+  <Layout>
+    <div class="home">
+      <!-- 主要内容 -->
+      <main class="main-content">
+        <!-- 英雄区域 -->
       <section class="hero">
         <div class="hero-content">
           <h1 class="hero-title">大语言模型竞技场</h1>
@@ -83,11 +81,12 @@
       </section>
     </main>
   </div>
+  </Layout>
 </template>
 
 <script setup>
 import { ChatDotRound, ScaleToOriginal, DataAnalysis, Setting } from '@element-plus/icons-vue'
-import AppHeader from '@/components/AppHeader.vue'
+import Layout from '@/components/Layout.vue'
 import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
@@ -96,12 +95,6 @@ const userStore = useUserStore()
 <style lang="scss" scoped>
 .home {
   min-height: 100vh;
-}
-
-
-
-.main-content {
-  padding-top: 80px;
 }
 
 .hero {
