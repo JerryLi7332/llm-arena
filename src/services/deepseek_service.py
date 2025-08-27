@@ -291,3 +291,4 @@ class DeepSeekService:
 
 # 创建全局服务实例
 deepseek_service = DeepSeekService()
+

@@ -2,8 +2,6 @@
 
 感谢您对LLM Arena项目的关注！我们欢迎所有形式的贡献。
 
----
-
 ## 快速开始
 
 1. **Fork项目**到您的GitHub账户
@@ -56,10 +54,10 @@
 
 ## 报告问题
 
-发现bug？请使用我们的issue模板报告：
+发现bug？请使用我们的 issue 模板报告：
 
-1. 检查是否已有相似的issue
-2. 使用appropriate的issue模板
+1. 检查是否已有相似的 issue
+2. 使用合适的 issue 模板
 3. 提供详细的重现步骤
 4. 包含相关的环境信息
 
@@ -76,6 +74,94 @@
 
 感谢所有为这个项目做出贡献的开发者！
 
+> **每个贡献都很重要，无论大小。感谢您帮助改进这个项目！**
+
 ---
 
-**每个贡献都很重要，无论大小。感谢您帮助改进这个项目！** 🙏
+# Contribution Guide
+
+Thank you for your interest in the LLM Arena project! We welcome contributions of all forms.
+
+## Quick Start
+
+1. Fork the project to your GitHub account.
+2. Clone your fork to your local machine.
+3. Create a branch for your feature or fix.
+4. Develop and test your changes.
+5. Submit a Pull Request.
+
+## Contribution Types
+
+We welcome the following types of contributions:
+
+- 🐛 **Bug fixes**
+
+- ✨ **New features**
+
+- 📚 **Documentation improvements**
+
+- 🧪 **Test additions**
+
+- ⚡ **Performance optimizations**
+
+- 🎨 **Code refactoring**
+
+## Commit Specification
+
+Please use clear commit messages:
+
+```
+Type(Scope): Brief description
+
+Detailed description (if necessary)
+```
+
+
+Examples:
+- `feat(api): Add user export functionality`
+
+- `fix(auth): Fix JWT token expiration handling`
+
+- `docs(readme): Update installation instructions`
+
+## Pull Request Process
+
+1. Ensure your code passes all checks.
+2. Update relevant documentation.
+3. Add appropriate tests.
+4. Fill out all information in the PR template.
+5. Wait for code review.
+
+## Documentation
+
+If your changes affect user experience, please update the relevant documentation:
+
+- **README.md** - Project overview and quick start.
+
+- **CLAUDE.md** - Detailed developer guide.
+
+- **API Documentation** - If there are API changes.
+
+## Report Issues
+
+Found a bug? Please report it using our issue template:
+
+1. Check if there is a similar issue already.
+2. Use the appropriate issue template.
+3. Provide detailed steps to reproduce.
+4. Include relevant environment information.
+
+## Feature Requests
+
+Got a great idea? We'd love to hear it:
+
+1. Use the feature request template.
+2. Clearly describe the use case.
+3. Consider backward compatibility.
+4. Discuss implementation methods.
+
+## Contributors
+
+Thank you to all the developers who have contributed to this project!
+
+> Every contribution matters, no matter how big or small. Thank you for helping to improve this project!
