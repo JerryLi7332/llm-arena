@@ -614,3 +614,304 @@ tail -f logs/backend_error_*.log
 5. **业务逻辑**: 激活/停用逻辑、游戏类型管理
 
 这些API为前端提供了强大的后端支持，使用户能够轻松管理他们的游戏AI代码。
+
+---
+
+# DeepSeek API
+
+## 概述
+
+本文档说明如何在现有FastAPI后端中集成DeepSeek API，实现AI聊天功能。
+
+## 新增文件
+
+### 1. 配置文件
+- `src/settings/deepseek.py` - DeepSeek API配置管理
+
+### 2. 服务层
+- `src/services/deepseek_service.py` - DeepSeek API服务实现
+
+### 3. API路由
+- `src/api/v1/deepseek.py` - DeepSeek API端点
+
+### 4. 依赖文件
+- `requirements_deepseek.txt` - 新增依赖列表
+
+## 环境变量配置
+
+在您的 `.env` 文件中添加以下配置：
+
+```bash
+# DeepSeek API配置
+DEEPSEEK_API_KEY=sk-your-deepseek-api-key-here
+DEEPSEEK_API_BASE=https://api.deepseek.com/v1
+DEEPSEEK_DEFAULT_MODEL=deepseek-chat
+DEEPSEEK_MAX_TOKENS=4000
+DEEPSEEK_TEMPERATURE=0.7
+DEEPSEEK_REQUEST_TIMEOUT=30000
+DEEPSEEK_RATE_LIMIT_PER_MINUTE=60
+DEEPSEEK_RATE_LIMIT_PER_HOUR=1000
+DEEPSEEK_MAX_COST_PER_REQUEST=0.01
+DEEPSEEK_MAX_COST_PER_DAY=1.0
+```
+
+## 安装依赖
+
+```bash
+# 安装新增依赖
+pip install -r requirements_deepseek.txt
+
+# 或者单独安装主要依赖
+pip install httpx>=0.24.0
+```
+
+## API端点
+
+集成后，您将拥有以下新的API端点：
+
+### 1. 聊天完成
+- **POST** `/api/v1/deepseek/chat`
+- 功能：发送消息给DeepSeek AI并获取回复
+
+### 2. 获取模型列表
+- **GET** `/api/v1/deepseek/models`
+- 功能：获取可用的DeepSeek模型
+
+### 3. 检查API状态
+- **GET** `/api/v1/deepseek/status`
+- 功能：检查DeepSeek API运行状态
+
+### 4. 获取速率限制信息
+- **GET** `/api/v1/deepseek/rate-limit`
+- 功能：查看当前API使用限制和成本统计
+
+### 5. 获取配置信息
+- **GET** `/api/v1/deepseek/config`
+- 功能：查看当前配置（不包含敏感信息）
+
+## 使用示例
+
+### 1. 发送聊天消息
+
+```bash
+curl -X POST "http://localhost:8000/api/v1/deepseek/chat" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "messages": [
+      {"role": "user", "content": "你好，请介绍一下自己"}
+    ],
+    "model": "deepseek-chat",
+    "temperature": 0.7,
+    "max_tokens": 1000
+  }'
+```
+
+### 2. 获取模型列表
+
+```bash
+curl -X GET "http://localhost:8000/api/v1/deepseek/models" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+### 3. 检查API状态
+
+```bash
+curl -X GET "http://localhost:8000/api/v1/deepseek/status" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+## 安全特性
+
+### 1. 用户认证
+- 所有API端点都需要有效的JWT令牌
+- 使用现有的 `DependAuth` 依赖
+
+### 2. 速率限制
+- 每分钟限制：60次请求
+- 每小时限制：1000次请求
+- 可配置的限制参数
+
+### 3. 成本控制
+- 单次请求最大成本：$0.01
+- 每日最大成本：$1.0
+- 实时成本统计和限制
+
+### 4. 输入验证
+- 消息格式验证
+- 参数范围验证
+- 模型名称验证
+
+## 错误处理
+
+### 1. 自定义异常
+- 使用 `CustomException` 统一错误格式
+- 详细的错误信息和状态码
+
+### 2. 常见错误
+- 401: API密钥无效
+- 429: 速率限制超限
+- 400: 请求参数错误
+- 408: 请求超时
+- 500: 服务器内部错误
+
+## 监控和日志
+
+### 1. 日志记录
+- API调用成功/失败日志
+- 成本统计日志
+- 错误详情日志
+
+### 2. 性能监控
+- 请求响应时间
+- 速率限制使用情况
+- 成本消耗统计
+
+## 部署步骤
+
+### 1. 代码部署
+```bash
+# 1. 复制新增文件到对应目录
+cp src/settings/deepseek.py /path/to/your/project/src/settings/
+cp src/services/deepseek_service.py /path/to/your/project/src/services/
+cp src/api/v1/deepseek.py /path/to/your/project/src/api/v1/
+
+# 2. 更新路由配置
+# 编辑 src/api/v1/__init__.py 文件
+
+# 3. 安装依赖
+pip install -r requirements_deepseek.txt
+```
+
+### 2. 环境配置
+```bash
+# 1. 设置环境变量
+export DEEPSEEK_API_KEY="sk-your-api-key"
+
+# 2. 或者添加到 .env 文件
+echo "DEEPSEEK_API_KEY=sk-your-api-key" >> .env
+```
+
+### 3. 重启服务
+```bash
+# 重启FastAPI服务
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
+## 测试验证
+
+### 1. 健康检查
+```bash
+# 检查API状态
+curl -X GET "http://localhost:8000/api/v1/deepseek/status" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+### 2. 功能测试
+```bash
+# 测试聊天功能
+curl -X POST "http://localhost:8000/api/v1/deepseek/chat" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"messages": [{"role": "user", "content": "测试消息"}]}'
+```
+
+### 3. 错误测试
+```bash
+# 测试无效令牌
+curl -X GET "http://localhost:8000/api/v1/deepseek/status" \
+  -H "Authorization: Bearer invalid-token"
+```
+
+## 故障排除
+
+### 1. 常见问题
+
+#### API密钥错误
+```
+错误：DeepSeek API密钥无效
+解决：检查 DEEPSEEK_API_KEY 环境变量是否正确设置
+```
+
+#### 网络连接问题
+```
+错误：DeepSeek API网络错误
+解决：检查网络连接和防火墙设置
+```
+
+#### 速率限制
+```
+错误：API调用频率超限
+解决：等待限制重置或调整配置参数
+```
+
+### 2. 日志查看
+```bash
+# 查看应用日志
+tail -f logs/app.log
+
+# 查看错误日志
+tail -f logs/error.log
+```
+
+### 3. 配置验证
+```bash
+# 检查配置信息
+curl -X GET "http://localhost:8000/api/v1/deepseek/config" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+## 性能优化
+
+### 1. 连接池
+- 使用 httpx 异步客户端
+- 配置合适的超时时间
+
+### 2. 缓存策略
+- 模型列表缓存
+- 状态检查缓存
+
+### 3. 异步处理
+- 所有API调用都是异步的
+- 支持并发请求处理
+
+## 扩展功能
+
+### 1. 流式输出
+- 支持 `stream=true` 参数
+- 实时返回AI回复
+
+### 2. 多模型支持
+- 自动模型选择
+- 模型性能对比
+
+### 3. 成本分析
+- 详细的成本统计
+- 使用趋势分析
+
+## 维护和更新
+
+### 1. 定期检查
+- API密钥有效期
+- 使用量统计
+- 成本控制
+
+### 2. 版本更新
+- 关注DeepSeek API更新
+- 及时更新依赖包
+- 测试新功能
+
+### 3. 监控告警
+- 设置成本超限告警
+- 监控API可用性
+- 错误率监控
+
+## 联系支持
+
+如果在部署过程中遇到问题，请：
+
+1. 检查日志文件获取详细错误信息
+2. 验证环境变量配置
+3. 确认网络连接正常
+4. 查看DeepSeek官方文档
+5. 联系技术支持团队
