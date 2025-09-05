@@ -58,6 +58,22 @@ def create_app() -> FastAPI:
     register_exceptions(app)
     register_routers(app, prefix="/api")
     
+    # 添加OPTIONS请求处理器
+    @app.options("/{path:path}", include_in_schema=False)
+    async def options_handler(path: str):
+        """处理所有OPTIONS预检请求"""
+        from fastapi.responses import Response
+        return Response(
+            status_code=200,
+            headers={
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD",
+                "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers, Cache-Control, Pragma, X-CSRFToken, Accept-Language, Accept-Encoding",
+                "Access-Control-Allow-Credentials": "true",
+                "Access-Control-Max-Age": "86400",  # 24小时
+            }
+        )
+    
     # Vue前端构建目录
     vue_dist_dir = Path(__file__).parent.parent / "frontend" / "dist"
     
