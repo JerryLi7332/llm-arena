@@ -41,5 +41,6 @@ declare module 'vue' {
     LoadingSpinner: typeof import('./src/components/LoadingSpinner.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    UserAvatar: typeof import('./src/components/UserAvatar.vue')['default']
   }
 }

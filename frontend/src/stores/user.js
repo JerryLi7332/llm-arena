@@ -130,6 +130,53 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
+  const uploadAvatar = async (file) => {
+    loading.value = true
+    try {
+      const response = await authApi.uploadAvatar(file)
+      
+      // 检查响应是否成功
+      // 由于request拦截器直接返回response.data，所以直接访问response的属性
+      if (response && response.avatar_url) {
+        // 更新用户头像
+        if (user.value) {
+          user.value.avatar = response.avatar_url
+        }
+        return { success: true, data: response }
+      } else {
+        return { 
+          success: false, 
+          message: response?.message || response?.msg || '头像上传失败' 
+        }
+      }
+    } catch (error) {
+      console.error('头像上传错误:', error)
+      const errorMessage = error.response?.data?.detail || 
+                          error.response?.data?.msg || 
+                          error.message || 
+                          '头像上传失败'
+      return { success: false, message: errorMessage }
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const deleteAvatar = async () => {
+    loading.value = true
+    try {
+      await authApi.deleteAvatar()
+      // 清除用户头像
+      if (user.value) {
+        user.value.avatar = null
+      }
+      return { success: true }
+    } catch (error) {
+      return { success: false, message: error.response?.data?.detail || error.message }
+    } finally {
+      loading.value = false
+    }
+  }
+
   const refreshUserToken = async () => {
     if (!refreshToken.value) {
       throw new Error('没有刷新令牌')
@@ -182,6 +229,8 @@ export const useUserStore = defineStore('user', () => {
     logout,
     initUser,
     updateProfile,
+    uploadAvatar,
+    deleteAvatar,
     setTokens,
     refreshUserToken,
     clearUser,

@@ -5,7 +5,7 @@ from tortoise.expressions import Q
 from repositories.dept import dept_repository
 from repositories.user import user_repository
 from schemas.base import Fail, Success, SuccessExtra
-from schemas.users import UserCreate, UserUpdate
+from schemas.users import UserCreate, UserUpdate, ProfileUpdate
 from services.base_service import BaseService
 from utils.cache import cached, clear_user_cache
 
@@ -173,6 +173,97 @@ class UserService(BaseService):
             data.append(user_dict)
 
         return data
+
+    async def update_user_avatar(self, user_id: int, avatar_url: str) -> Success:
+        """更新用户头像"""
+        try:
+            # 验证用户是否存在
+            user = await user_repository.get(id=user_id)
+            if not user:
+                return Fail(msg="用户不存在")
+            
+            # 验证头像URL
+            if not avatar_url:
+                return Fail(msg="头像URL不能为空")
+            
+            # 更新用户头像
+            await user_repository.update(id=user_id, obj_in={"avatar": avatar_url})
+            
+            # 清除相关缓存
+            await clear_user_cache(user_id)
+            
+            self.logger.info(f"用户 {user_id} 头像已更新为: {avatar_url}")
+            
+            return Success(msg="头像更新成功", data={"avatar": avatar_url})
+            
+        except Exception as e:
+            self.logger.error(f"更新用户头像失败: {str(e)}")
+            return Fail(msg="更新用户头像失败")
+
+    async def update_user_profile(self, user_id: int, profile_data: ProfileUpdate) -> Success:
+        """更新用户个人资料"""
+        try:
+            # 过滤掉空值
+            update_data = {k: v for k, v in profile_data.model_dump().items() if v is not None}
+            
+            if not update_data:
+                return Fail(msg="没有需要更新的数据")
+            
+            await user_repository.update(id=user_id, obj_in=update_data)
+            
+            # 清除相关缓存
+            await clear_user_cache(user_id)
+            
+            return Success(msg="个人资料更新成功")
+            
+        except Exception as e:
+            self.logger.error(f"更新用户个人资料失败: {str(e)}")
+            return Fail(msg="更新用户个人资料失败")
+
+    async def delete_user_avatar(self, user_id: int) -> Success:
+        """删除用户头像"""
+        try:
+            await user_repository.update(id=user_id, obj_in={"avatar": None})
+            
+            # 清除相关缓存
+            await clear_user_cache(user_id)
+            
+            return Success(msg="头像删除成功")
+            
+        except Exception as e:
+            self.logger.error(f"删除用户头像失败: {str(e)}")
+            return Fail(msg="删除用户头像失败")
+
+    async def change_user_password(self, user_id: int, old_password: str, new_password: str) -> Success:
+        """用户修改密码"""
+        try:
+            from utils.password import verify_password, get_password_hash
+            
+            # 获取用户信息
+            user = await user_repository.get(id=user_id)
+            if not user:
+                return Fail(msg="用户不存在")
+            
+            # 验证旧密码
+            if not verify_password(old_password, user.password):
+                return Fail(code=400, msg="旧密码验证错误")
+            
+            # 检查新密码是否与旧密码相同
+            if verify_password(new_password, user.password):
+                return Fail(code=400, msg="新密码不能与旧密码相同")
+            
+            # 更新密码
+            hashed_new_password = get_password_hash(new_password)
+            await user_repository.update(id=user_id, obj_in={"password": hashed_new_password})
+            
+            # 清除相关缓存
+            await clear_user_cache(user_id)
+            
+            return Success(msg="密码修改成功")
+            
+        except Exception as e:
+            self.logger.error(f"修改密码失败: {str(e)}")
+            return Fail(msg="修改密码失败")
 
 
 # 全局实例

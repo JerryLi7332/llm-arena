@@ -19,7 +19,7 @@
         <template v-if="userStore.isLoggedIn">
           <el-dropdown @command="handleCommand">
             <span class="user-menu">
-              <el-avatar :size="32" :src="userStore.avatar || 'https://via.placeholder.com/32x32/4F46E5/FFFFFF?text=' + userStore.username?.charAt(0)" />
+              <UserAvatar :size="32" :avatar="userStore.avatar" :username="userStore.username" />
               <span class="username">{{ userStore.username }}</span>
               <el-icon><ArrowDown /></el-icon>
             </span>
@@ -45,6 +45,7 @@ import { useUserStore } from '@/stores/user'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { ArrowDown } from '@element-plus/icons-vue'
+import UserAvatar from '@/components/UserAvatar.vue'
 
 const userStore = useUserStore()
 const router = useRouter()

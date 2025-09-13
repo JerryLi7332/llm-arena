@@ -38,21 +38,22 @@ class CORSHandlerMiddleware(BaseHTTPMiddleware):
         
         # 添加CORS响应头
         origin = request.headers.get("origin")
-        print(f"DEBUG: Adding CORS headers for origin: {origin}")
-        print(f"DEBUG: Allowed origins: {settings.CORS_ORIGINS_LIST}")
+        # print(f"DEBUG: Adding CORS headers for origin: {origin}")
+        # print(f"DEBUG: Allowed origins: {settings.CORS_ORIGINS_LIST}")
         
         if origin and self._is_origin_allowed(origin):
-            print(f"DEBUG: Setting Access-Control-Allow-Origin to: {origin}")
+            # print(f"DEBUG: Setting Access-Control-Allow-Origin to: {origin}")
             response.headers["Access-Control-Allow-Origin"] = origin
         elif "*" in settings.CORS_ORIGINS_LIST:
-            print("DEBUG: Setting Access-Control-Allow-Origin to: *")
+            # print("DEBUG: Setting Access-Control-Allow-Origin to: *")
             response.headers["Access-Control-Allow-Origin"] = "*"
         elif origin:
+            pass
             # 如果origin存在但不在允许列表中，不设置CORS头
-            print(f"DEBUG: Origin {origin} not in allowed list, not setting CORS header")
+            # print(f"DEBUG: Origin {origin} not in allowed list, not setting CORS header")
         else:
             # 如果没有origin头，设置默认的CORS头
-            print("DEBUG: No origin header, setting default CORS header")
+            # print("DEBUG: No origin header, setting default CORS header")
             response.headers["Access-Control-Allow-Origin"] = settings.CORS_ORIGINS_LIST[0] if settings.CORS_ORIGINS_LIST else "*"
         
         if settings.CORS_ALLOW_CREDENTIALS:
@@ -77,16 +78,16 @@ class CORSHandlerMiddleware(BaseHTTPMiddleware):
     def _get_allow_origin(self, request: Request) -> str:
         """获取允许的Origin"""
         origin = request.headers.get("origin")
-        print(f"DEBUG: Request origin: {origin}")
-        print(f"DEBUG: Allowed origins: {settings.CORS_ORIGINS_LIST}")
+        # print(f"DEBUG: Request origin: {origin}")
+        # print(f"DEBUG: Allowed origins: {settings.CORS_ORIGINS_LIST}")
         if origin and self._is_origin_allowed(origin):
-            print(f"DEBUG: Origin {origin} found in allowed list")
+            # print(f"DEBUG: Origin {origin} found in allowed list")
             return origin
         elif "*" in settings.CORS_ORIGINS_LIST:
-            print("DEBUG: Using wildcard origin")
+            # print("DEBUG: Using wildcard origin")
             return "*"
         else:
             # 如果没有匹配的origin，返回第一个允许的origin
             fallback = settings.CORS_ORIGINS_LIST[0] if settings.CORS_ORIGINS_LIST else "*"
-            print(f"DEBUG: Using fallback origin: {fallback}")
+            # print(f"DEBUG: Using fallback origin: {fallback}")
             return fallback

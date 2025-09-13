@@ -6,6 +6,7 @@ from fastapi import Depends, FastAPI
 from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from tortoise import Tortoise
 
 from core.dependency import get_current_username
@@ -57,6 +58,11 @@ def create_app() -> FastAPI:
 
     register_exceptions(app)
     register_routers(app, prefix="/api")
+    
+    # 添加静态文件服务 - 提供uploads目录的文件
+    uploads_dir = Path(__file__).parent.parent / "uploads"
+    if uploads_dir.exists():
+        app.mount("/uploads", StaticFiles(directory=str(uploads_dir)), name="uploads")
     
     # 添加OPTIONS请求处理器
     @app.options("/{path:path}", include_in_schema=False)

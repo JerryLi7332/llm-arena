@@ -13,7 +13,7 @@ from .deepseek import router as deepseek_router
 v1_router = APIRouter()
 
 v1_router.include_router(base_router, prefix="/base")
-v1_router.include_router(users_router, prefix="/users", dependencies=[DependPermisson])
+v1_router.include_router(users_router, prefix="/users", dependencies=[DependAuth])
 v1_router.include_router(roles_router, prefix="/role", dependencies=[DependPermisson])
 # v1_router.include_router(
 #     menus_router, prefix="/menu", dependencies=[DependPermisson]

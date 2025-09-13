@@ -75,6 +75,10 @@ class FileMappingRepository(
             }
         return None
 
+    async def get_latest_by_user(self, user_id: int) -> FileMapping | None:
+        """获取用户最新上传的文件映射记录"""
+        return await FileMapping.filter(upload_user_id=user_id).order_by('-created_at').first()
+
 
 # 全局实例
 file_mapping_repository = FileMappingRepository(FileMapping)

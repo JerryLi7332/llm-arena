@@ -67,6 +67,10 @@ LLM Arena 是一个基于 FastAPI 构建的现代化后端服务，提供完整�
 | `/update` | POST | 更新用户信息 | 需要权限 | UserUpdate |
 | `/delete` | DELETE | 删除用户 | 需要权限 | user_id |
 | `/reset_password` | POST | 重置用户密码 | 需要权限 | user_id |
+| `/upload_avatar` | POST | 上传用户头像 | 需要认证 | file (UploadFile) |
+| `/profile` | PUT | 更新个人资料 | 需要认证 | ProfileUpdate |
+| `/password` | PUT | 修改密码 | 需要认证 | UpdatePassword |
+| `/avatar` | DELETE | 删除用户头像 | 需要认证 | 无 |
 
 ### 3. 角色管理模块 (`/v1/role`)
 
@@ -97,7 +101,20 @@ LLM Arena 是一个基于 FastAPI 构建的现代化后端服务，提供完整�
 |------|------|------|----------|------|
 | `/upload` | POST | 上传文件 | 需要认证 | file (UploadFile) |
 
-### 6. 游戏系统
+### 6. 用户头像管理
+
+#### 头像上传限制
+- **支持格式**: JPG、PNG、GIF、WebP
+- **文件大小**: 最大 2MB
+- **权限要求**: 需要用户认证
+- **返回信息**: 头像URL和成功消息
+
+#### 个人资料更新
+- **支持字段**: username、email、nickname、avatar
+- **权限要求**: 需要用户认证
+- **验证规则**: 遵循用户模型验证规则
+
+### 7. 游戏系统
 
 #### 石头剪刀布游戏
 - **游戏ID**: `rock_paper_scissors`
@@ -117,11 +134,71 @@ LLM Arena 是一个基于 FastAPI 构建的现代化后端服务，提供完整�
     "id": int,
     "username": str,
     "email": str,
+    "nickname": str,
+    "avatar": str,
     "is_active": bool,
     "is_superuser": bool,
     "created_at": datetime,
     "updated_at": datetime,
-    "last_login": datetime
+    "last_login": datetime,
+    "roles": list
+}
+```
+
+### 用户创建模型 (UserCreate)
+```python
+{
+    "email": str,
+    "username": str,
+    "password": str,
+    "nickname": str,
+    "avatar": str,
+    "is_active": bool,
+    "is_superuser": bool,
+    "role_ids": list[int],
+    "dept_id": int
+}
+```
+
+### 用户更新模型 (UserUpdate)
+```python
+{
+    "id": int,
+    "email": str,
+    "username": str,
+    "nickname": str,
+    "avatar": str,
+    "password": str,
+    "is_active": bool,
+    "is_superuser": bool,
+    "role_ids": list[int],
+    "dept_id": int
+}
+```
+
+### 头像上传响应模型 (AvatarUpload)
+```python
+{
+    "avatar_url": str,
+    "message": str
+}
+```
+
+### 个人资料更新模型 (ProfileUpdate)
+```python
+{
+    "username": str,
+    "email": str,
+    "nickname": str,
+    "avatar": str
+}
+```
+
+### 密码更新模型 (UpdatePassword)
+```python
+{
+    "old_password": str,
+    "new_password": str
 }
 ```
 
@@ -233,6 +310,31 @@ curl -X GET "http://localhost:8000/v1/users/list?page=1&page_size=10" \
 curl -X POST "http://localhost:8000/v1/files/upload" \
      -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
      -F "file=@/path/to/file.txt"
+```
+
+### 4. 上传用户头像
+```bash
+curl -X POST "http://localhost:8000/v1/users/upload_avatar" \
+     -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+     -F "file=@/path/to/avatar.jpg"
+```
+
+### 5. 更新个人资料
+```bash
+curl -X PUT "http://localhost:8000/v1/users/profile" \
+     -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "username": "new_username",
+       "email": "new_email@example.com",
+       "nickname": "新昵称"
+     }'
+```
+
+### 6. 删除用户头像
+```bash
+curl -X DELETE "http://localhost:8000/v1/users/avatar" \
+     -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 
 ## 开发环境设置
