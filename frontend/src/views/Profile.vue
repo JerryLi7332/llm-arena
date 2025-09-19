@@ -1,8 +1,8 @@
 <template>
-  <div class="profile-page">
-    <AppHeader />
-    <div class="profile-container">
-      <div class="profile-header">
+  <Layout>
+    <div class="profile-page">
+      <div class="profile-container">
+        <div class="profile-header">
         <h1>个人资料</h1>
         <p>管理您的账户信息和设置</p>
       </div>
@@ -30,19 +30,44 @@
             </el-form-item>
             
             <el-form-item label="头像">
-              <el-upload
-                class="avatar-uploader"
-                :show-file-list="false"
-                :before-upload="beforeAvatarUpload"
-                :on-success="handleAvatarSuccess"
-              >
-                <el-avatar
-                  v-if="profileForm.avatar"
-                  :src="profileForm.avatar"
-                  :size="100"
-                />
-                <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
-              </el-upload>
+              <div class="avatar-section">
+                <el-upload
+                  class="avatar-uploader"
+                  :show-file-list="false"
+                  :before-upload="beforeAvatarUpload"
+                  :http-request="handleAvatarUpload"
+                  :disabled="uploading"
+                >
+                  <UserAvatar
+                    v-if="profileForm.avatar"
+                    :avatar="profileForm.avatar"
+                    :username="profileForm.username"
+                    :size="100"
+                    class="avatar-preview"
+                    ref="avatarRef"
+                  />
+                  <div v-else class="avatar-placeholder">
+                    <el-icon class="avatar-uploader-icon"><Plus /></el-icon>
+                    <span class="upload-text">点击上传头像</span>
+                  </div>
+                </el-upload>
+                
+                <div v-if="profileForm.avatar" class="avatar-actions">
+                  <el-button 
+                    size="small" 
+                    type="danger" 
+                    @click="deleteAvatar"
+                    :loading="deleting"
+                  >
+                    删除头像
+                  </el-button>
+                </div>
+                
+                <div class="avatar-tips">
+                  <p>支持 JPG、PNG、GIF、WebP 格式</p>
+                  <p>文件大小不超过 2MB</p>
+                </div>
+              </div>
             </el-form-item>
             
             <el-form-item>
@@ -154,19 +179,24 @@
       </div>
     </div>
   </div>
+  </Layout>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
-import AppHeader from '@/components/AppHeader.vue'
+import Layout from '@/components/Layout.vue'
+import UserAvatar from '@/components/UserAvatar.vue'
 
 const userStore = useUserStore()
 const profileFormRef = ref()
 const passwordFormRef = ref()
+const avatarRef = ref()
 const loading = ref(false)
+const uploading = ref(false)
+const deleting = ref(false)
 
 const profileForm = reactive({
   username: '',
@@ -214,7 +244,12 @@ const passwordRules = {
   ],
   newPassword: [
     { required: true, message: '请输入新密码', trigger: 'blur' },
-    { min: 6, message: '密码长度不能少于 6 个字符', trigger: 'blur' }
+    { min: 8, message: '密码长度不能少于 8 个字符', trigger: 'blur' },
+    { 
+      pattern: /^(?=.*[A-Za-z])(?=.*\d).+$/, 
+      message: '密码必须包含字母和数字', 
+      trigger: 'blur' 
+    }
   ],
   confirmPassword: [
     { required: true, validator: validateConfirmPassword, trigger: 'blur' }
@@ -261,15 +296,37 @@ const changePassword = async () => {
     await passwordFormRef.value.validate()
     loading.value = true
     
-    // 这里应该调用修改密码的API
-    ElMessage.success('密码修改成功')
+    // 调用修改密码的API
+    const passwordData = {
+      old_password: passwordForm.currentPassword,
+      new_password: passwordForm.newPassword
+    }
     
-    // 清空表单
-    passwordForm.currentPassword = ''
-    passwordForm.newPassword = ''
-    passwordForm.confirmPassword = ''
+    const response = await authApi.changePassword(passwordData)
+    
+    if (response.data && response.data.success) {
+      ElMessage.success('密码修改成功')
+      
+      // 清空表单
+      passwordForm.currentPassword = ''
+      passwordForm.newPassword = ''
+      passwordForm.confirmPassword = ''
+      
+      // 重置表单验证状态
+      passwordFormRef.value.resetFields()
+    } else {
+      ElMessage.error(response.data?.msg || '密码修改失败')
+    }
   } catch (error) {
     console.error('修改密码错误:', error)
+    
+    // 处理API错误
+    if (error.response && error.response.data) {
+      const errorMsg = error.response.data.detail || error.response.data.msg || '密码修改失败'
+      ElMessage.error(errorMsg)
+    } else {
+      ElMessage.error('密码修改失败，请稍后重试')
+    }
   } finally {
     loading.value = false
   }
@@ -285,20 +342,73 @@ const savePreferences = () => {
 }
 
 const beforeAvatarUpload = (file) => {
-  const isJPG = file.type === 'image/jpeg' || file.type === 'image/png'
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+  const isAllowedType = allowedTypes.includes(file.type)
   const isLt2M = file.size / 1024 / 1024 < 2
 
-  if (!isJPG) {
-    ElMessage.error('头像只能是 JPG/PNG 格式!')
+  if (!isAllowedType) {
+    ElMessage.error('头像只能是 JPG、PNG、GIF、WebP 格式!')
+    return false
   }
   if (!isLt2M) {
     ElMessage.error('头像大小不能超过 2MB!')
+    return false
   }
-  return isJPG && isLt2M
+  return true
 }
 
-const handleAvatarSuccess = (response, file) => {
-  profileForm.avatar = URL.createObjectURL(file.raw)
+const handleAvatarUpload = async (options) => {
+  const file = options.file
+  uploading.value = true
+  
+  try {
+    const result = await userStore.uploadAvatar(file)
+    if (result.success) {
+      // 更新表单中的头像URL
+      profileForm.avatar = result.data.avatar_url
+      
+      // 重置头像组件的错误状态
+      if (avatarRef.value) {
+        avatarRef.value.resetError()
+      }
+      
+      ElMessage.success('头像上传成功')
+    } else {
+      ElMessage.error(result.message || '头像上传失败')
+    }
+  } catch (error) {
+    console.error('头像上传错误:', error)
+    ElMessage.error('头像上传失败，请稍后重试')
+  } finally {
+    uploading.value = false
+  }
+}
+
+const deleteAvatar = async () => {
+  try {
+    await ElMessageBox.confirm('确定要删除当前头像吗？', '确认删除', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    
+    deleting.value = true
+    const result = await userStore.deleteAvatar()
+    
+    if (result.success) {
+      profileForm.avatar = ''
+      ElMessage.success('头像删除成功')
+    } else {
+      ElMessage.error(result.message || '头像删除失败')
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('头像删除错误:', error)
+      ElMessage.error('头像删除失败')
+    }
+  } finally {
+    deleting.value = false
+  }
 }
 </script>
 
@@ -345,17 +455,66 @@ const handleAvatarSuccess = (response, file) => {
       color: var(--text-primary);
     }
 
-    .avatar-uploader {
-      .avatar-uploader-icon {
-        font-size: 28px;
-        color: #8c939d;
-        width: 100px;
-        height: 100px;
-        line-height: 100px;
-        text-align: center;
-        border: 1px dashed #d9d9d9;
-        border-radius: 50%;
-        cursor: pointer;
+    .avatar-section {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+
+      .avatar-uploader {
+        .avatar-preview {
+          cursor: pointer;
+          transition: all 0.3s ease;
+          
+          &:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          }
+        }
+
+        .avatar-placeholder {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          width: 100px;
+          height: 100px;
+          border: 2px dashed #d9d9d9;
+          border-radius: 50%;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          background-color: #fafafa;
+
+          &:hover {
+            border-color: var(--primary-color);
+            background-color: #f0f9ff;
+          }
+
+          .avatar-uploader-icon {
+            font-size: 28px;
+            color: #8c939d;
+            margin-bottom: 4px;
+          }
+
+          .upload-text {
+            font-size: 12px;
+            color: #8c939d;
+          }
+        }
+      }
+
+      .avatar-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .avatar-tips {
+        p {
+          margin: 0;
+          font-size: 12px;
+          color: #8c939d;
+          line-height: 1.4;
+        }
       }
     }
 

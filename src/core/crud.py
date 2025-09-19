@@ -51,3 +51,23 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     async def remove(self, id: int) -> None:
         obj = await self.get(id=id)
         await obj.delete()
+    
+    async def get_multi(self, **filters):  # -> list[ModelType]
+        """获取多个对象"""
+        query = self.model.filter(**filters)
+        return await query.all()
+    
+    async def update_multi(self, filters: dict, update_data: dict) -> int:
+        """批量更新对象"""
+        query = self.model.filter(**filters)
+        return await query.update(**update_data)
+    
+    async def delete(self, id: int) -> None:
+        """删除对象（别名）"""
+        await self.remove(id)
+
+
+# 创建一个便捷的CRUD类
+class CRUD(CRUDBase[ModelType, CreateSchemaType, UpdateSchemaType]):
+    """便捷的CRUD类，继承自CRUDBase"""
+    pass

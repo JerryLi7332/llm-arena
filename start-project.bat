@@ -95,6 +95,4 @@ echo 🔑 默认管理员账号: admin / abcd1234
 echo.
 echo 按 Ctrl+C 停止服务
 
-uvicorn src:app --host 0.0.0.0 --port 8000 --reload
-
-
+uv run uvicorn src:app --host 0.0.0.0 --port 8000 --reload --reload-exclude uploads --reload-exclude logs

@@ -3,7 +3,6 @@ from functools import partial
 from aerich import Command
 from fastapi import FastAPI
 from fastapi.middleware import Middleware
-from fastapi.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from tortoise.expressions import Q
@@ -28,6 +27,7 @@ from core.middlewares import (
     RequestLoggingMiddleware,
     SecurityHeadersMiddleware,
 )
+from core.cors_middleware import CORSHandlerMiddleware
 from log import logger
 from models.admin import Api, Menu, Role
 from repositories.api import api_repository
@@ -54,13 +54,7 @@ EXCLUDE_PATHS = [
 
 def make_middlewares():
     middleware = [
-        Middleware(
-            CORSMiddleware,
-            allow_origins=settings.CORS_ORIGINS_LIST,
-            allow_credentials=settings.CORS_ALLOW_CREDENTIALS,
-            allow_methods=settings.CORS_ALLOW_METHODS,
-            allow_headers=settings.CORS_ALLOW_HEADERS,
-        ),
+        Middleware(CORSHandlerMiddleware),  # 自定义CORS处理中间件（优先级最高）
         Middleware(SecurityHeadersMiddleware),  # 安全头中间件
         Middleware(RequestLoggingMiddleware),  # 请求日志中间件
         Middleware(BackGroundTaskMiddleware),

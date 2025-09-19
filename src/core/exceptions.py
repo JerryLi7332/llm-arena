@@ -7,6 +7,15 @@ from tortoise.exceptions import DoesNotExist, IntegrityError
 from settings.config import settings
 
 
+class CustomException(Exception):
+    """自定义异常类"""
+    def __init__(self, status_code: int, message: str, details: dict = None):
+        self.status_code = status_code
+        self.message = message
+        self.details = details or {}
+        super().__init__(self.message)
+
+
 class SettingNotFound(Exception):
     pass
 

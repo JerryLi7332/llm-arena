@@ -6,6 +6,7 @@ from fastapi import Depends, FastAPI
 from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from tortoise import Tortoise
 
 from core.dependency import get_current_username
@@ -57,6 +58,27 @@ def create_app() -> FastAPI:
 
     register_exceptions(app)
     register_routers(app, prefix="/api")
+    
+    # 添加静态文件服务 - 提供uploads目录的文件
+    uploads_dir = Path(__file__).parent.parent / "uploads"
+    if uploads_dir.exists():
+        app.mount("/uploads", StaticFiles(directory=str(uploads_dir)), name="uploads")
+    
+    # 添加OPTIONS请求处理器
+    @app.options("/{path:path}", include_in_schema=False)
+    async def options_handler(path: str):
+        """处理所有OPTIONS预检请求"""
+        from fastapi.responses import Response
+        return Response(
+            status_code=200,
+            headers={
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD",
+                "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers, Cache-Control, Pragma, X-CSRFToken, Accept-Language, Accept-Encoding",
+                "Access-Control-Allow-Credentials": "true",
+                "Access-Control-Max-Age": "86400",  # 24小时
+            }
+        )
     
     # Vue前端构建目录
     vue_dist_dir = Path(__file__).parent.parent / "frontend" / "dist"

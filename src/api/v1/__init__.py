@@ -1,17 +1,19 @@
 from fastapi import APIRouter
 
-from core.dependency import DependPermisson
+from core.dependency import DependPermisson, DependAuth
 
 from .apis import apis_router
 from .base import base_router
 from .files import files_router
 from .roles import roles_router
 from .users import users_router
+from .games import games_router
+from .deepseek import router as deepseek_router
 
 v1_router = APIRouter()
 
 v1_router.include_router(base_router, prefix="/base")
-v1_router.include_router(users_router, prefix="/users", dependencies=[DependPermisson])
+v1_router.include_router(users_router, prefix="/users", dependencies=[DependAuth])
 v1_router.include_router(roles_router, prefix="/role", dependencies=[DependPermisson])
 # v1_router.include_router(
 #     menus_router, prefix="/menu", dependencies=[DependPermisson]
@@ -23,6 +25,8 @@ v1_router.include_router(apis_router, prefix="/api", dependencies=[DependPermiss
 # v1_router.include_router(
 #     auditlog_router, prefix="/auditlog", dependencies=[DependPermisson]
 # )
-v1_router.include_router(files_router, prefix="/files", dependencies=[DependPermisson])
+v1_router.include_router(files_router, prefix="/files", dependencies=[DependPermisson], tags=["上传文件"])
+v1_router.include_router(games_router, prefix="/games", dependencies=[DependAuth])
+v1_router.include_router(deepseek_router, prefix="/deepseek", dependencies=[DependAuth], tags=["DeepSeek API"])
 
 __all__ = ["v1_router"]

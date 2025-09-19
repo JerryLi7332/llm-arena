@@ -1,8 +1,8 @@
 <template>
-  <div class="collaboration">
-    <AppHeader />
-    <div class="container">
-      <h1 class="page-title">共创</h1>
+  <Layout>
+    <div class="collaboration">
+      <div class="container">
+        <h1 class="page-title">共创</h1>
       <p class="page-subtitle">与社区一起创造更好的AI体验</p>
       
       <div class="content-sections">
@@ -115,13 +115,14 @@
       </div>
     </div>
   </div>
+  </Layout>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Plus, ChatDotRound, Document } from '@element-plus/icons-vue'
-import AppHeader from '@/components/AppHeader.vue'
+import Layout from '@/components/Layout.vue'
 
 const projects = ref([
   {

@@ -8,6 +8,8 @@ class BaseUser(BaseModel):
     id: int
     email: EmailStr | None = None
     username: str | None = None
+    nickname: str | None = None
+    avatar: str | None = None
     is_active: bool | None = True
     is_superuser: bool | None = False
     created_at: datetime | None
@@ -30,6 +32,8 @@ class UserCreate(BaseModel):
         min_length=8,
         description="密码（至少8位，包含字母和数字）",
     )
+    nickname: str | None = Field(None, max_length=50, description="昵称")
+    avatar: str | None = Field(None, max_length=500, description="头像URL")
     is_active: bool | None = True
     is_superuser: bool | None = False
     role_ids: list[int] | None = []
@@ -70,6 +74,8 @@ class UserUpdate(BaseModel):
     id: int
     email: EmailStr
     username: str
+    nickname: str | None = None
+    avatar: str | None = None
     password: str | None = None
     is_active: bool | None = True
     is_superuser: bool | None = False
@@ -111,3 +117,17 @@ class UpdatePassword(BaseModel):
             raise ValueError("新密码必须包含数字")
 
         return v
+
+
+class AvatarUpload(BaseModel):
+    """头像上传响应模型"""
+    avatar_url: str = Field(description="头像URL")
+    message: str = Field(default="头像上传成功", description="响应消息")
+
+
+class ProfileUpdate(BaseModel):
+    """个人资料更新模型"""
+    username: str | None = None
+    email: str | None = None
+    nickname: str | None = None
+    avatar: str | None = None

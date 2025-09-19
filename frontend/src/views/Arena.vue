@@ -1,9 +1,9 @@
 <template>
-  <div class="arena">
-    <AppHeader />
-    <div class="container">
-      <h1 class="page-title">对战大厅</h1>
-      <p class="page-subtitle">选择您想要对战的AI模型，开始精彩的对话体验</p>
+  <Layout>
+    <div class="arena">
+      <div class="container">
+        <h1 class="page-title">对战大厅</h1>
+        <p class="page-subtitle">选择您想要对战的AI模型，开始精彩的对话体验</p>
       
       <div class="models-grid">
         <div class="model-card" v-for="model in models" :key="model.id">
@@ -23,12 +23,13 @@
       </div>
     </div>
   </div>
+  </Layout>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import AppHeader from '@/components/AppHeader.vue'
+import Layout from '@/components/Layout.vue'
 
 const models = ref([
   {

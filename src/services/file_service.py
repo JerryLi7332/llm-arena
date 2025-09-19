@@ -54,6 +54,12 @@ ALLOWED_EXTENSIONS: set[str] = {
     ".zip",
     ".rar",
     ".7z",
+    # AI代码文件类型
+    ".py",
+    ".js",
+    ".java",
+    ".cpp",
+    ".c",
 }
 
 DANGEROUS_EXTENSIONS: set[str] = {
@@ -64,14 +70,12 @@ DANGEROUS_EXTENSIONS: set[str] = {
     ".pif",
     ".scr",
     ".vbs",
-    ".js",
     ".jar",
     ".sh",
     ".ps1",
     ".php",
     ".asp",
     ".jsp",
-    ".py",
     ".pl",
     ".rb",
 }
@@ -103,8 +107,12 @@ class FileService:
             # 文件安全验证
             self._validate_file_security(file)
 
+            # 在读取文件之前保存文件信息，避免文件指针问题
+            original_filename = file.filename
+            original_size = file.size if hasattr(file, 'size') else None
+
             # 生成安全文件名
-            safe_filename = self._generate_safe_filename(file.filename)
+            safe_filename = self._generate_safe_filename(original_filename)
 
             # 读取并验证文件内容
             content = await self._read_and_validate_file(file)
@@ -127,8 +135,8 @@ class FileService:
             # 返回文件信息
             response_data = {
                 "file_id": file_id,
-                "original_filename": file.filename,
-                "file_type": self._determine_file_type(file.filename),
+                "original_filename": original_filename,
+                "file_type": self._determine_file_type(original_filename),
                 "file_size": len(content),
                 "file_path": str(file_path),
             }
@@ -142,6 +150,8 @@ class FileService:
             raise
         except Exception as e:
             self.logger.error(f"文件上传失败: {str(e)}")
+            self.logger.error(f"错误类型: {type(e).__name__}")
+            self.logger.error(f"错误详情: {e}")
             raise HTTPException(status_code=500, detail="文件上传失败") from e
 
     async def _authenticate_user(self):
@@ -184,16 +194,20 @@ class FileService:
 
     async def _read_and_validate_file(self, file: UploadFile) -> bytes:
         """读取并验证文件内容"""
-        content = await file.read()
+        try:
+            content = await file.read()
 
-        # 验证文件大小
-        if len(content) > MAX_FILE_SIZE:
-            raise HTTPException(
-                status_code=400,
-                detail=f"文件大小超过限制 {MAX_FILE_SIZE // (1024 * 1024)}MB",
-            )
+            # 验证文件大小
+            if len(content) > MAX_FILE_SIZE:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"文件大小超过限制 {MAX_FILE_SIZE // (1024 * 1024)}MB",
+                )
 
-        return content
+            return content
+        except Exception as e:
+            self.logger.error(f"读取文件失败: {str(e)}")
+            raise HTTPException(status_code=400, detail="文件读取失败，请检查文件是否损坏")
 
     async def _save_file_mapping(
         self,
@@ -230,6 +244,50 @@ class FileService:
         except Exception as e:
             # 文件映射保存失败不应该影响上传流程
             self.logger.warning(f"保存文件映射失败: {str(e)}")
+
+    async def download_file(self, file_path: str) -> bytes:
+        """
+        下载文件
+        
+        Args:
+            file_path: 文件路径
+            
+        Returns:
+            bytes: 文件内容
+        """
+        try:
+            file_path_obj = Path(file_path)
+            if not file_path_obj.exists():
+                raise HTTPException(status_code=404, detail="文件不存在")
+            
+            with open(file_path_obj, "rb") as f:
+                return f.read()
+                
+        except Exception as e:
+            self.logger.error(f"下载文件失败: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"下载文件失败: {str(e)}")
+    
+    async def delete_file(self, file_path: str) -> bool:
+        """
+        删除文件
+        
+        Args:
+            file_path: 文件路径
+            
+        Returns:
+            bool: 是否删除成功
+        """
+        try:
+            file_path_obj = Path(file_path)
+            if file_path_obj.exists():
+                file_path_obj.unlink()
+                self.logger.info(f"已删除文件: {file_path}")
+                return True
+            return False
+            
+        except Exception as e:
+            self.logger.error(f"删除文件失败: {str(e)}")
+            return False
 
     def _determine_file_type(self, filename: str) -> str:
         """确定文件类型"""

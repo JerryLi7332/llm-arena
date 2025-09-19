@@ -21,6 +21,22 @@ export const authApi = {
     return request.put('/api/v1/users/profile', profileData)
   },
 
+  // 上传用户头像
+  uploadAvatar: (file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return request.post('/api/v1/users/upload_avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+  },
+
+  // 删除用户头像
+  deleteAvatar: () => {
+    return request.delete('/api/v1/users/avatar')
+  },
+
   // 修改密码
   changePassword: (passwordData) => {
     return request.put('/api/v1/users/password', passwordData)

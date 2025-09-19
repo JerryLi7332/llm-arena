@@ -16,6 +16,8 @@ class User(BaseModel, TimestampMixin):
     )
     phone = fields.CharField(max_length=20, null=True, description="电话", index=True)
     password = fields.CharField(max_length=128, null=True, description="密码")
+    avatar = fields.CharField(max_length=500, null=True, description="头像URL", index=True)
+    nickname = fields.CharField(max_length=50, null=True, description="昵称", index=True)
     is_active = fields.BooleanField(default=True, description="是否激活", index=True)
     is_superuser = fields.BooleanField(
         default=False, description="是否为超级管理员", index=True
@@ -126,7 +128,7 @@ class FileMapping(BaseModel, TimestampMixin):
     )
     original_filename = fields.CharField(max_length=255, description="原始文件名")
     file_type = fields.CharField(max_length=50, description="文件类型")
-    file_size = fields.BigIntField(null=True, description="文件大小(字节)")
+    file_size = fields.IntField(null=True, description="文件大小(字节)")
     upload_user_id = fields.IntField(description="上传用户ID", index=True)
     file_path = fields.CharField(max_length=500, null=True, description="本地文件路径")
 
