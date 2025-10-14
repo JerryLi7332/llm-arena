@@ -42,7 +42,7 @@ class ApiRepository(CRUDBase[Api, ApiCreate, ApiUpdate]):
                         dict(
                             method=method,
                             path=path,
-                            summary=summary,
+                            summary=summary or "未定义",
                             tags=tags,
                         )
                     ).save()
@@ -52,7 +52,7 @@ class ApiRepository(CRUDBase[Api, ApiCreate, ApiUpdate]):
                         **dict(
                             method=method,
                             path=path,
-                            summary=summary,
+                            summary=summary or "未定义",
                             tags=tags,
                         )
                     )
