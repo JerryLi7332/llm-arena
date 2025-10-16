@@ -1,0 +1,104 @@
+services:
+  # PostgreSQL 数据库
+  postgres:
+    image: docker.m.daocloud.io/library/postgres:15-alpine
+    container_name: llm-arena-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-llm_arena}
+      POSTGRES_INITDB_ARGS: "-E UTF8"
+      TZ: Asia/Shanghai
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../../scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - llm-arena-network
+
+  # Redis 缓存
+  redis:
+    image: docker.m.daocloud.io/library/redis:7-alpine
+    container_name: llm-arena-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}
+    volumes:
+      - redis_data:/data
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - llm-arena-network
+
+  # LLM Arena 后端
+  backend:
+    build:
+      context: ../..
+      dockerfile: config/docker/Dockerfile
+      shm_size: '4gb'  # 增加共享内存，解决段错误
+      args:
+        BUILDKIT_INLINE_CACHE: 1
+    container_name: llm-arena-backend
+    restart: unless-stopped
+    env_file:
+      - ../../.env
+    environment:
+      # 覆盖 .env 中的数据库配置，使用容器服务名
+      DB_HOST: postgres
+      DB_PORT: 5432
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      # 确保使用 PostgreSQL
+      DB_ENGINE: postgresql
+    volumes:
+      # 挂载上传文件目录（持久化）
+      - ../../uploads:/app/uploads
+      # 挂载日志目录
+      - ../../logs:/app/logs
+      # 开发模式：挂载源代码（可选，生产环境注释掉）
+      # - ../../src:/app/src
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    shm_size: '8gb'  # 增加共享内存到8GB
+    deploy:
+      resources:
+        limits:
+          memory: 12G  # 增加内存限制到12GB
+        reservations:
+          memory: 2G  # 增加保留内存到2GB
+    networks:
+      - llm-arena-network
+
+# 数据卷
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+# 网络
+networks:
+  llm-arena-network:
+    driver: bridge

@@ -1,0 +1,48 @@
+# Git 换行符配置
+# 参考: https://git-scm.com/docs/gitattributes
+
+# 默认行为：Windows 上自动转换
+* text=auto
+
+# Shell 脚本必须使用 LF（Unix 换行符）
+*.sh text eol=lf
+
+# Docker 相关文件使用 LF
+Dockerfile text eol=lf
+docker-compose.yml text eol=lf
+.dockerignore text eol=lf
+.env.docker text eol=lf
+docker-entrypoint.sh text eol=lf
+
+# Python 文件使用 LF（PEP 8 建议）
+*.py text eol=lf
+
+# 配置文件使用 LF
+*.yml text eol=lf
+*.yaml text eol=lf
+*.toml text eol=lf
+*.json text eol=lf
+*.ini text eol=lf
+
+# Markdown 文件使用 LF
+*.md text eol=lf
+
+# Windows 批处理文件使用 CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# 二进制文件不转换
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.tar binary
+*.gz binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
