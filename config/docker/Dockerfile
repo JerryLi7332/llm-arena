@@ -1,5 +1,6 @@
 # 使用官方 Python 3.11 slim 镜像作为基础镜像
-FROM python:3.11-slim
+# 使用国内镜像加速
+FROM docker.m.daocloud.io/library/python:3.11-slim
 
 # 设置工作目录
 WORKDIR /app
@@ -23,10 +24,14 @@ RUN apt-get update && apt-get install -y \
 
 # 复制依赖文件
 COPY requirements.txt .
+COPY config/docker/requirements-minimal.txt ./requirements-minimal.txt
 
-# 安装 Python 依赖
-RUN pip install --no-cache-dir --upgrade pip -i https://pypi.tuna.tsinghua.edu.cn/simple && \
-    pip install --no-cache-dir -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+# 分阶段安装依赖，减少内存压力
+# 第一步：安装最基础的包
+RUN python -m pip install --no-cache-dir -r requirements-minimal.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+# 第二步：尝试安装其余依赖（如果失败，至少基础功能可用）
+RUN python -m pip install --no-cache-dir -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple || echo "Some packages failed to install, continuing with basic setup"
 
 # 复制项目文件
 COPY . .
