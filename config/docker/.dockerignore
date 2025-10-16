@@ -29,7 +29,8 @@ venv
 env
 ENV
 .venv
-.env
+# .env 文件需要在容器中使用，所以不要忽略
+# .env
 
 # IDE
 .vscode
